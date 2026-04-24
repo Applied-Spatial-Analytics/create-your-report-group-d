@@ -8,6 +8,8 @@ author:
     affiliation: "MSc Geomatics"
   - name: "Darius Floroiu"
     affiliation: "MSc Geomatics"
+  - name: "Claudiu Forgaci"
+    affiliation: "MSc Urbanism"
 format: html
 ---
 
