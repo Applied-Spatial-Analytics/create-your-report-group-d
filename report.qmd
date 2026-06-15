@@ -26,7 +26,7 @@ When you click the **Render** button a document will be generated that includes 
 1 + 1
 ```
 
-You can add options to executable code like this 
+You can add options to executable code like this: 
 
 ```{r}
 #| echo: false
