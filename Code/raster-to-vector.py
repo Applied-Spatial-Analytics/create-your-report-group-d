@@ -94,7 +94,9 @@ def main():
     parser.add_argument("--vector",  required=True, help="Path to GeoPackage")
     parser.add_argument("--layer",   default=None,  help="Layer name (default: first)")
     parser.add_argument("--output",  default="results.gpkg", help="Output GeoPackage")
+    parser.add_argument("--out-layer", default="output", help="Name of layer in output GeoPackage")
     parser.add_argument("--band",    type=int, default=1, help="Raster band (default: 1)")
+    parser.add_argument("--attribute", default="raster-attribute", help="Name of the attribute")
     args = parser.parse_args()
 
     # ── load vector ──────────────────────────────────────────────────────────
@@ -126,18 +128,18 @@ def main():
             else:
                 means.append(mean_under_line(geom, src, args.band))
 
-    gdf["mean_ndvi"] = means
+    gdf[args.attribute] = means
 
     nan_count = sum(np.isnan(m) for m in means)
     print(f"\nDone. {len(gdf) - nan_count} features have valid mean values; "
           f"{nan_count} returned NaN (outside raster or no valid pixels).")
 
     # ── write output ─────────────────────────────────────────────────────────
-    gdf.to_file(args.output, driver="GPKG", layer="roads_LST_NDVI")
-    print(f"Results written to '{args.output}' (layer: roads_LST_NDVI)")
+    gdf.to_file(args.output, driver="GPKG", layer=args.out_layer)
+    print(f"Results written to '{args.output}' (layer: '{args.out_layer}')")
 
     # Quick summary
-    valid = gdf["mean_lst"].dropna()
+    valid = gdf[args.attribute].dropna()
     if len(valid):
         print(f"\nSummary of mean_raster:")
         print(f"  min  : {valid.min():.4f}")
