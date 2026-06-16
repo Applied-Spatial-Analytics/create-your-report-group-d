@@ -1,0 +1,522 @@
+---
+title: "Blue-Green Infrastructure and Urban Heat Island Intensity Across Spatial Resolutions"
+subtitle: "ARFW0501 – Group D Project Report"
+author:
+  - name: "Artemi Kurski"
+    affiliation: "MSc Geomatics, TU Delft"
+  - name: "Niranjan Pradeep"
+    affiliation: "MSc Geomatics, TU Delft"
+  - name: "Darius Floroiu"
+    affiliation: "MSc Geomatics, TU Delft"
+  - name: "Henryk Gujda"
+    affiliation: "MSc Geomatics, TU Delft"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    embed-resources: true
+    theme: cosmo
+---
+
+```{=html}
+
+
+<style>
+/* ── Report-wide design tokens ────────────────────────── */
+:root {
+  --brand-blue:   #185FA5;
+  --brand-teal:   #0F6E56;
+  --brand-warm:   #BA7517;
+  --brand-heat:   #A32D2D;
+  --brand-green:  #3B6D11;
+  --neutral-100:  #F1EFE8;
+  --neutral-300:  #B4B2A9;
+  --neutral-700:  #444441;
+  font-family: "Source Sans Pro", "Helvetica Neue", sans-serif;
+}
+
+/* ── Callout / note boxes ─────────────────────────────── */
+.note-box {
+  border-left: 3px solid var(--brand-blue);
+  background: #E6F1FB22;
+  padding: 0.75rem 1rem;
+  border-radius: 0 6px 6px 0;
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+/* ── Map figure wrapper ───────────────────────────────── */
+.map-figure {
+  margin: 1.5rem 0;
+  border: 0.5px solid #d3d1c7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.map-figure img {
+  width: 100%;
+  display: block;
+}
+.map-caption {
+  padding: 0.5rem 0.9rem;
+  background: #F1EFE8;
+  font-size: 0.8rem;
+  color: #5F5E5A;
+  border-top: 0.5px solid #d3d1c7;
+}
+.map-caption strong { color: #2c3e50; }
+
+/* ── Cluster badge pills ──────────────────────────────── */
+.cluster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 1.25rem 0;
+}
+.cluster-card {
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  border: 0.5px solid transparent;
+}
+.cluster-card .label {
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+.cc-1 { background:#EAF3DE; border-color:#639922; color:#27500A; }
+.cc-2 { background:#FAEEDA; border-color:#BA7517; color:#633806; }
+.cc-3 { background:#E6F1FB; border-color:#185FA5; color:#0C447C; }
+.cc-4 { background:#FCEBEB; border-color:#A32D2D; color:#791F1F; }
+
+/* ── Interactive widget shell ─────────────────────────── */
+.widget-shell {
+  border: 0.5px solid #d3d1c7;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  background: #fafaf8;
+}
+.widget-shell h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--neutral-700);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  color: #5F5E5A;
+}
+.slider-row input[type=range] { flex: 1; }
+.slider-val {
+  min-width: 42px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--neutral-700);
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 1rem;
+}
+.stat-cell {
+  background: white;
+  border: 0.5px solid #d3d1c7;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  text-align: center;
+}
+.stat-cell .sv { font-size: 1.4rem; font-weight: 600; }
+.stat-cell .sl { font-size: 0.72rem; color: #888780; margin-top: 2px; }
+
+/* ── Workflow diagram table ───────────────────────────── */
+.workflow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+.step-num {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-blue);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-body { font-size: 0.9rem; line-height: 1.55; }
+.step-body strong { color: #2c3e50; }
+
+/* ── File-tree block ──────────────────────────────────── */
+.file-tree {
+  background: #2c3e50;
+  color: #ecf0f1;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: "Fira Mono", "Courier New", monospace;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+}
+.ft-dir   { color: #74b9ff; font-weight: 600; }
+.ft-py    { color: #55efc4; }
+.ft-r     { color: #fd79a8; }
+.ft-data  { color: #fdcb6e; }
+.ft-other { color: #b2bec3; }
+
+
+.cluster-card-full {
+  width: 100%;
+  border-radius: 10px;
+  padding: 1.4rem 1.6rem;
+  font-size: 1rem;
+  border-left: 6px solid #e81710;
+  background: #cbe2f822;
+  color: #2c3e50;
+  font-weight: 600;
+  line-height: 1.5;
+}
+</style>
+```
+
+# Introduction
+
+In the context of rapid urbanisation and climate change, it is increasingly important to understand how cities shape their local climate.
+
+Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability. Cities differ in density, land use, building materials, and the amount of green space they contain. These factors strongly affect how heat is absorbed, stored, and released, which leads to noticeable temperature differences between urban areas. A key concept here is the **Urban Heat Island (UHI)** effect, where cities become warmer than their surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
+
+Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban blue-green infrastructure contributes to temperature mitigation.
+In light of this we aim to explore the following research question:
+
+```{=html}
+<div class="cluster-card cluster-card-full">
+  How do blue-green infrastructures influence Urban Heat Island (UHI) intensity across different spatial resolutions?
+</div>
+```
+
+::: {.note-box}
+**City Selection:** 
+To answer the research question, we focus on two case study cities: Rotterdam and Guangzhou. These cities were selected for their similarities in coastal location and economic significance, while also exhibiting distinct urban forms and climates. `Rotterdam`, located in the Netherlands, is known for its modern architecture and extensive port facilities, while `Guangzhou`, in southern China, features a mix of traditional and contemporary urban development. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
+:::
+---
+
+# Getting started
+
+The first step of the analysis involves identifying the required datasets and defining the spatial boundaries of the study area.
+
+For this purpose, **Google Earth Engine (GEE)** was used to access and process the main datasets. These datasets form the basis for the initial setup and help in selecting the relevant neighbourhoods for further analysis.
+
+
+**1. Land Surface Temperature (LST):**
+ LST was derived from Landsat 8 data in Google Earth Engine. Thermal bands were processed to obtain surface temperature, which was then used to study spatial heat variations across Rotterdam.
+
+**2. NDVI:**
+ Vegetation cover was computed from Landsat 8 spectral bands in Google Earth Engine using the Normalized Difference Vegetation Index (NDVI), providing a measure of urban greenness.
+
+**3. Local Climate Zones (LCZ):**
+ Urban form classification was obtained using the RUBCLIM LCZ dataset available in Google Earth Engine, which categorises urban areas based on built type and land cover characteristics.
+
+**4. Administrative boundaries:**
+ Municipal and neighbourhood boundaries for Rotterdam were taken from the `CBS Wijken en Buurten 2025 GeoPackage`, used to define the spatial extent of the study area.
+
+**5. Street network:**
+ The pedestrian street network was extracted from OpenStreetMap using the `osmnx` library, and used for analysing urban connectivity and spatial structure.
+
+
+# Analysis Workflow
+
+```{=html}
+<div class="widget-shell">
+<h4>Pipeline overview</h4>
+<div class="workflow-step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Data export</strong> — Landsat 8 scenes were filtered in Google Earth Engine, clouds were removed, and a selected time period was used to create LST and NDVI composites. The LCZ layer was also exported as a mosaic for further analysis. </div>
+</div>
+<div class="workflow-step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Neighbourhood level feature extraction</strong> — For each neighbourhood polygon, mean LST, mean NDVI, and the dominant LCZ class were extracted to summarise local climate and land cover conditions.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Identifying neighbourhoods</strong> — Identified the neighbourhoods which showed distinct differences in LST, LCZ and NDVI when compared to the rest of the neighbourhoods.</div>
+</div>
+<div class="workflow-step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>PST betweenness analysis</strong> — Betweenness centrality was computed for the pedestrian network</div>
+</div>
+<div class="workflow-step">
+  <div class="step-num">5</div>
+  <div class="step-body"><strong>Street-segment clustering</strong> — Grouped the street segments into clusters using K-Means based on connectivity (betweenness centrality), temperature (LST), and vegetation (NDVI).</div>
+</div>
+<div class="workflow-step">
+  <div class="step-num">6</div>
+  <div class="step-body"><strong>Ground truth sampling</strong> — Random street selections from the high-activity, high-heat clusters and were chosen and verified through Google Street View.</div>
+</div>
+<div class="workflow-step">
+  <div class="step-num">7</div>
+  <div class="step-body"><strong>Reproduce for Guangzhou</strong> — The steps were reproduced for Guangzhou and a comparitive analysis of the two cities was done</div>
+</div>
+</div>
+```
+
+---
+
+## Intermediate analysis
+
+After completing Steps 1 to 3, the following results were obtained, which formed the basis for initiating Step 4.
+
+### Rotterdam
+```{=html}
+<div class="map-figure">
+  <img src="Report data/Images/Rotterdam/rotterdam_ndvi_map.png"
+       alt="Map of Rotterdam showing mean NDVI vegetation index distribution per neighbourhood." />
+  <div class="map-caption">
+    <strong>Figure 1.</strong> Rotterdam NDVI Vegetation Index Distribution
+  </div>
+</div>
+
+<div class="map-figure">
+  <img src="Report data/Images/Rotterdam/rotterdam_lst_map.png"
+       alt="Map of Rotterdam showing land surface temperature per neighbourhood. Orange and yellow tones indicate higher LST in the city core and port zones" />
+  <div class="map-caption">
+    <strong>Figure 2.</strong> Rotterdam Land Surface Temperature (LST) 
+  </div>
+</div>
+
+<div class="map-figure">
+  <img src="Report data/Images/Rotterdam/rotterdam_lcz_map_official.png"
+       alt="Map of Rotterdam showing dominant Local Climate Zone class per neighbourhood using WMO standard colours." />
+  <div class="map-caption">
+    <strong>Figure 3.</strong> Rotterdam Local Climate Zone Layouts 
+  </div>
+</div>
+```
+### Guangzhou
+```{=html}
+<div class="map-figure">
+  <img src="Report data/Images/Guangzhou/NDVI_guangzhou.jpeg"
+       alt="Map of Guangzhou showing mean NDVI vegetation index distribution per neighbourhood." />
+  <div class="map-caption">
+    <strong>Figure 4.</strong> Guangzhou NDVI Vegetation Index Distribution  
+  </div>
+</div>
+
+<div class="map-figure">
+  <img src="Report data/Images/Guangzhou/LST_guangzhou.jpeg"
+       alt="Map of Guangzhou showing land surface temperature per neighbourhood. Orange and yellow tones indicate higher LST in the city core and port zones" />
+  <div class="map-caption">
+    <strong>Figure 5.</strong> Guangzhou Land Surface Temperature (LST) 
+  </div>
+</div>
+
+<div class="map-figure">
+  <img src="Report data/Images/Guangzhou/NDVI_guangzhou.jpeg"
+       alt="Map of Guangzhou showing dominant Local Climate Zone class per neighbourhood using WMO standard colours." />
+  <div class="map-caption">
+    <strong>Figure 6.</strong> Guangzhou Local Climate Zone Layouts
+  </div>
+</div>
+```
+
+## PST Betweeness centrality
+
+PST for the neighbourhood Ommard.
+
+```{=html}
+<div class="map-figure">
+  <img src="Report data/Images/Rotterdam/om_ndvi_map.png"/>
+  <div class="map-caption">
+    <strong>Figure 7.</strong> Ommard Neighbourhood (Rotterdam) Relative NDVI for streets.
+  </div>
+</div>
+
+<div class="map-figure">
+  <img src="Report data/Images/Rotterdam/om_lst_map.png"/>
+  <div class="map-caption">
+    <strong>Figure 8.</strong> Ommard Neighbourhood (Rotterdam) Relative LST for streets.
+  </div>
+</div>
+
+<div class="map-figure">
+  <img src="Report data/Images/Rotterdam/om_lcz_map.png"/>
+  <div class="map-caption">
+    <strong>Figure 9.</strong> Ommard Neighbourhood (Rotterdam) LCZ classification on streets.
+  </div>
+</div>
+```
+
+```{=html}
+<div class="widget-shell">
+
+<h4 style="text-align:center;">Neighbourhood Analysis</h4>
+
+<div style="display:flex; justify-content:center; gap:10px; margin:15px 0; flex-wrap:wrap;">
+
+  <button id="lstBtn"
+    style="
+      padding:10px 18px;
+      border:none;
+      border-radius:8px;
+      background:#A32D2D;
+      color:white;
+      font-weight:600;
+      cursor:pointer;">
+    Heat Island (LST)
+  </button>
+
+  <button id="ndviBtn"
+    style="
+      padding:10px 18px;
+      border:1px solid #d3d1c7;
+      border-radius:8px;
+      background:white;
+      font-weight:600;
+      cursor:pointer;">
+    Vegetation (NDVI)
+  </button>
+
+</div>
+
+<!-- LST PANEL -->
+<div id="lstPanel" style="text-align:center;">
+
+  <h5>Top Heat Island Neighbourhoods</h5>
+
+  <div style="display:inline-block; text-align:left;">
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#A32D2D;">1</div>
+      <div class="step-body"><strong>Bedrijvenpark Noord-West</strong> — +10.60°C</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#B23A3A;">2</div>
+      <div class="step-body"><strong>Spaanse Polder</strong> — +9.18°C</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#C24A4A;">3</div>
+      <div class="step-body"><strong>Zuidplein</strong> — +8.50°C</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#D35D5D;">4</div>
+      <div class="step-body"><strong>Nieuw Mathenesse</strong> — +8.02°C</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#E07474;">5</div>
+      <div class="step-body"><strong>Waalhaven Zuid</strong> — +7.85°C</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NDVI PANEL -->
+<div id="ndviPanel" style="display:none; text-align:center;">
+
+  <h5>Top Vegetation Deficit Neighbourhoods</h5>
+
+  <div style="display:inline-block; text-align:left;">
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#3B6D11;">1</div>
+      <div class="step-body"><strong>Kop van Zuid</strong> — −0.230 NDVI</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#4A7F1A;">2</div>
+      <div class="step-body"><strong>Cs Kwartier</strong> — −0.253 NDVI</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#5A9422;">3</div>
+      <div class="step-body"><strong>Zuidplein</strong> — −0.268 NDVI</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#6AA82B;">4</div>
+      <div class="step-body"><strong>Waalhaven Zuid</strong> — −0.274 NDVI</div>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-num" style="background:#7BBC35;">5</div>
+      <div class="step-body"><strong>Spaanse Polder</strong> — −0.281 NDVI</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="map-caption" style="text-align:center;">
+<strong>Key Insight.</strong> Heat hotspots align strongly with industrial zones, while vegetation deficits cluster in highly built-up or infrastructurally dense neighbourhoods.
+</div>
+
+</div>
+
+<script>
+const lstBtn = document.getElementById("lstBtn");
+const ndviBtn = document.getElementById("ndviBtn");
+
+const lstPanel = document.getElementById("lstPanel");
+const ndviPanel = document.getElementById("ndviPanel");
+
+function setActive(btn, activeColor) {
+  btn.style.background = activeColor;
+  btn.style.color = "white";
+  btn.style.border = "none";
+}
+
+function setInactive(btn) {
+  btn.style.background = "white";
+  btn.style.color = "black";
+  btn.style.border = "1px solid #d3d1c7";
+}
+
+lstBtn.onclick = () => {
+  lstPanel.style.display = "block";
+  ndviPanel.style.display = "none";
+
+  setActive(lstBtn, "#A32D2D");
+  setInactive(ndviBtn);
+};
+
+ndviBtn.onclick = () => {
+  lstPanel.style.display = "none";
+  ndviPanel.style.display = "block";
+
+  setActive(ndviBtn, "#3B6D11");
+  setInactive(lstBtn);
+};
+</script>
+```
+
+
+
+
+
+# Typology
+
+
+
+# Results
+
+# Discussion
+
+# Conclusion
