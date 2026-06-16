@@ -216,6 +216,10 @@ To answer the research question, we focus on two case study cities: Rotterdam an
 :::
 ---
 
+## Methods
+
+Our methodology relies on a dual-scale approach to understand the urban climate. We analyzed both macro-level administrative boundaries (Dutch *buurten* and Chinese *jiedao*) and micro-level street networks. By sticking entirely to open-source data—primarily OpenStreetMap (OSM) and Landsat satellite imagery—we ensured that the pipeline built for Rotterdam could be directly transferred to Guangzhou without coordinate or data availability issues.
+
 # Getting started
 
 The first step of the analysis involves identifying the required datasets and defining the spatial boundaries of the study area.
@@ -509,9 +513,34 @@ ndviBtn.onclick = () => {
 
 
 
+# Typology construction
 
+Instead of designing climate adaptations for thousands of individual streets or dozens of neighborhoods one by one, we grouped the urban fabric into distinct "typologies." These are essentially microclimate personas: clusters of areas that share the same environmental and spatial DNA. If we know what works for a specific typology in Rotterdam, we can test if that same solution works for its twin typology in Guangzhou.
 
-# Typology
+We constructed these typologies across two distinct spatial scales:
+
+**1. Data Acquisition and Indicator Processing**  
+First, we established the thermal and physical baseline of the cities. Using Google Earth Engine, we pulled summer 2025 data from Landsat 8 (30m resolution) to calculate two key metrics:
+
+*   **Vegetation (NDVI):** To measure the density of green infrastructure.
+*   **Land Surface Temperature (LST):** To map the thermal landscape. To ensure accuracy across different satellite capture dates, we normalized the LST data by calculating the deviation from the spatial mean of each image, giving us a clean look at localized heat anomalies rather than day-to-day weather spikes. 
+
+For urban morphology, we integrated the RUBCLIM Local Climate Zone (LCZ) dataset (100m resolution), which categorizes the physical build of the city into classes ranging from "Compact High-Rise" to "Sparsely Built."
+
+**2. Pedestrian Accessibility (PST Engine)**  
+To figure out how human-friendly these environments actually are, we couldn't just look at satellite pixels; we had to simulate how people move. Using OSM walking networks, we built a Python-based graph network to calculate Pedestrian Space Syntax (PST) accessibility. 
+
+We identified "cooling hubs" (neighborhoods with an NDVI above the city median) and mapped their center points. The algorithm then simulated human navigation, counting the number of topological turns required to reach these cooling zones from any point on the street network. Paths requiring fewer than three turns received higher accessibility scores, mathematically penalizing areas that are cut off from blue-green infrastructure. 
+
+**3. Macro-Scale Clustering (Neighborhoods)**  
+With our variables set (Mean LST, Mean NDVI, LCZ class, and PST score), we aggregated the data up to the neighborhood level using zonal statistics. Because our data was mixed (blending continuous numbers like temperature with categorical tags like LCZ codes), standard clustering methods wouldn't work. 
+
+Instead, we ran the data through R using a Gower distance matrix, which is specifically designed to handle mixed data types. We then applied Partitioning Around Medoids (PAM) clustering to group the neighborhoods into four distinct microclimate profiles.
+
+**4. Micro-Scale Clustering (Street Segments)**  
+Finally, we brought the analysis down to the human scale to find the most vulnerable individual streets. Using Python and Geopandas, we slightly buffered the OSM street linestrings and extracted the exact LST and NDVI pixel values sitting directly under the pavement, while sampling the LCZ classification at the start point of each street. 
+
+After dealing with missing values and standardizing the numeric data, we used an elbow plot to determine the optimal number of clusters and ran a MiniBatch K-Means clustering algorithm. To verify that our math matched physical reality, the pipeline randomly sampled 50 streets from our most extreme clusters and exported their coordinates to a CSV, allowing us to drop into Google Street View and qualitatively inspect the physical characteristics of the hottest streets in the city.
 
 
 
