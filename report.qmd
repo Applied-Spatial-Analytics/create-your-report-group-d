@@ -542,7 +542,48 @@ Finally, we brought the analysis down to the human scale to find the most vulner
 
 After dealing with missing values and standardizing the numeric data, we used an elbow plot to determine the optimal number of clusters and ran a MiniBatch K-Means clustering algorithm. To verify that our math matched physical reality, the pipeline randomly sampled 50 streets from our most extreme clusters and exported their coordinates to a CSV, allowing us to drop into Google Street View and qualitatively inspect the physical characteristics of the hottest streets in the city.
 
+```{r}
+library(sf)
+library(dplyr)
+library(plotly)
 
+# Read the layer from the GeoPackage
+roads_data <- st_read("data/rotterdam/rotterdam_roads_clustered.gpkg",
+                       layer = "rotterdam_roads_data")
+
+# Randomly select 500 rows
+set.seed(42)  # remove or change this if you don't want reproducible sampling
+roads_sample <- roads_data %>% slice_sample(n = 500)
+
+# Colors for clusters 0-5
+cluster_colors <- c(
+  "0" = "#4C72B0",
+  "1" = "#65C3A1",
+  "2" = "#FC9964",
+  "3" = "#869DC5",
+  "4" = "#E597C0",
+  "5" = "#D9C04C"
+)
+
+cluster3d_scaled <- plot_ly(
+  x = roads_sample$lst,
+  y = roads_sample$ndvi,
+  z = roads_sample$Bww1kM,
+  type = "scatter3d",
+  mode = "markers",
+  color = as.factor(roads_sample$cluster),
+  colors = cluster_colors,
+  marker = list(size = 3)
+) %>%
+  layout(
+    scene = list(
+      xaxis = list(title = "lst"),
+      yaxis = list(title = "ndvi"),
+      zaxis = list(title = "Bww1kM")
+    )
+  )
+cluster3d_scaled
+```
 
 # Results
 
