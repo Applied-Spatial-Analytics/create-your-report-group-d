@@ -34,3 +34,8 @@ If you have questions about the assignment, please ask them in
 [Discussions](https://github.com/sdgis-edu-tud/asa2025/discussions).
 
 
+# Replication
+
+All code is found in the `/code` folder. There are jupyter notebooks (`.ipynb`), python files (`.py`), and R scripts (`.R`)
+
+## Dependencies
