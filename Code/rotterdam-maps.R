@@ -10,7 +10,7 @@ library(scales) # For clean legend formatting
 
 # 1. SETUP OUTPUT DIRECTORIES
 # ==============================================================================
-map_dir <- "Output/Maps"
+map_dir <- "../out/maps"
 if (!dir.exists(map_dir)) {
   dir.create(map_dir, recursive = TRUE)
   cat("Created directory:", map_dir, "\n")
@@ -18,9 +18,9 @@ if (!dir.exists(map_dir)) {
 
 # 2. LOAD DATA
 # ==============================================================================
-gpkg_path <- "data/processed/rotterdam_wijkenbuurten_enriched.gpkg"
-cat("Reading data layer 'buurten_clustered'...\n")
-buurten_maps <- st_read(gpkg_path, layer = "buurten_clustered", quiet = TRUE)
+gpkg_path <- "../data/rotterdam/rotterdam_wijkenbuurten_enriched.gpkg"
+cat("Reading data layer 'buurten_enriched'...\n")
+buurten_maps <- st_read(gpkg_path, layer = "buurten_enriched", quiet = TRUE)
 
 # Ensure geometry type and drop empty features if they exist
 buurten_maps <- buurten_maps[!st_is_empty(buurten_maps), ]
@@ -41,40 +41,14 @@ theme_report_map <- function() {
 }
 
 # ==============================================================================
-# MAP 1: MICROCLIMATE CLUSTERS MAP (Categorical)
-# ==============================================================================
-cat("Generating Microclimate Clusters Map...\n")
-
-map_clusters <- ggplot(data = buurten_maps) +
-  geom_sf(aes(fill = factor(cluster_id)), color = "#ffffff", size = 0.05) +
-  scale_fill_manual(
-    name = "Environmental\nProfiles",
-    values = c("1" = "#2ecc71", "2" = "#f1c40f", "3" = "#3498db", "4" = "#e74c3c"),
-    labels = c(
-      "1: Balanced Urban Mix", 
-      "2: Warm Green Suburbs", 
-      "3: Cool Urban Cores", 
-      "4: Exposed High-Heat Zones"
-    )
-  ) +
-  labs(
-    title = "Rotterdam Spatial Microclimate Clusters",
-    subtitle = "Combined partitioning of LST, NDVI, and Local Climate Zones (LCZ)",
-    x = "Longitude", y = "Latitude"
-  ) +
-  theme_report_map()
-
-ggsave(file.path(map_dir, "rotterdam_microclimate_clusters.png"), plot = map_clusters, width = 10, height = 7, dpi = 300)
-
-# ==============================================================================
 # MAP 2: LAND SURFACE TEMPERATURE (LST) MAP (Continuous Temperature)
 # ==============================================================================
 cat("Generating Land Surface Temperature Map...\n")
 
 map_lst <- ggplot(data = buurten_maps) +
-  geom_sf(aes(fill = mean_LST_celsius), color = "#ffffff", size = 0.05) +
+  geom_sf(aes(fill = mean_LST_normalized), color = "#ffffff", size = 0.05) +
   scale_fill_viridis_c(
-    option = "inferno", 
+    option = "inferno",
     name = "LST (°C)",
     labels = label_number(suffix = "°C")
   ) +
@@ -95,7 +69,7 @@ cat("Generating Normalized Difference Vegetation Index Map...\n")
 map_ndvi <- ggplot(data = buurten_maps) +
   geom_sf(aes(fill = mean_NDVI), color = "#ffffff", size = 0.05) +
   scale_fill_viridis_c(
-    option = "mako", 
+    option = "mako",
     direction = -1, # Invert so higher vegetation values appear deep green/blue
     name = "Mean NDVI score"
   ) +
@@ -183,8 +157,8 @@ map_lcz <- ggplot(data = buurten_maps) +
   guides(fill = guide_legend(ncol = 1))
 
 # 5. Save the plot
-ggsave(file.path(map_dir, "rotterdam_lcz_map_official.png"), plot = map_lcz, width = 12, height = 7, dpi = 300)
+ggsave(file.path(map_dir, "rotterdam_lcz_map.png"), plot = map_lcz, width = 12, height = 7, dpi = 300)
 
 cat("✔ LCZ map successfully saved with official WMO colors!\n")
 
-cat("\n✔ All 4 spatial maps successfully exported to:", map_dir, "\n\n")
+cat("\n✔ All 3 spatial maps successfully exported to:", map_dir, "\n\n")
