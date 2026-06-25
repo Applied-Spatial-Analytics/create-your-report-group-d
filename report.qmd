@@ -358,9 +358,9 @@ cluster3d_scaled <- plot_ly(
 ) %>%
   layout(
     scene = list(
-      xaxis = list(title = "lst"),
-      yaxis = list(title = "ndvi"),
-      zaxis = list(title = "Bww1kM")
+      xaxis = list(title = "LST"),
+      yaxis = list(title = "NDVI"),
+      zaxis = list(title = "Betweenness")
     )
   )
 cluster3d_scaled
@@ -766,6 +766,134 @@ ndviBtn.onclick = () => {
   setInactive(lstBtn);
 };
 </script>
+```
+
+```{r message=FALSE, warning=FALSE}
+library(sf)
+library(dplyr)
+library(plotly)
+
+# Read the layer from the GeoPackage
+invisible(capture.output(
+  gzhou_roads_data <- st_read("data/guangzhou/guangzhou_roads_clustered.gpkg",
+                        layer = "guangzhou_roads_data")
+))
+
+# Randomly select 500 rows
+set.seed(42)  # remove or change this if you don't want reproducible sampling
+gzhou_roads_sample <- gzhou_roads_data %>% slice_sample(n = 500)
+
+# Colors for clusters 0-5
+cluster_colors <- c(
+  "0" = "#4C72B0",
+  "1" = "#65C3A1",
+  "2" = "#FC9964",
+  "3" = "#869DC5",
+  "4" = "#E597C0",
+  "5" = "#D9C04C"
+)
+
+cluster3d_scaled <- plot_ly(
+  x = gzhou_roads_sample$lst,
+  y = gzhou_roads_sample$ndvi,
+  z = gzhou_roads_sample$Bww1kM,
+  type = "scatter3d",
+  mode = "markers",
+  color = as.factor(gzhou_roads_sample$cluster),
+  colors = cluster_colors,
+  marker = list(size = 3)
+) %>%
+  layout(
+    scene = list(
+      xaxis = list(title = "LST"),
+      yaxis = list(title = "NDVI"),
+      zaxis = list(title = "Betweenness")
+    )
+  )
+cluster3d_scaled
+```
+
+```{r message=FALSE, warning=FALSE}
+# LST/NDVI correlation for Gzhou
+
+library(plotly)
+
+# Correlation coefficient
+correlation <- cor(gzhou_roads_sample$lst, gzhou_roads_sample$ndvi, use = "complete.obs")
+
+# Linear model for the trend line
+lm_fit <- lm(ndvi ~ lst, data = gzhou_roads_sample)
+lst_range <- seq(min(gzhou_roads_sample$lst, na.rm = TRUE),
+                  max(gzhou_roads_sample$lst, na.rm = TRUE),
+                  length.out = 100)
+trend_pred <- predict(lm_fit, newdata = data.frame(lst = lst_range))
+
+scatter_lst_ndvi <- plot_ly(
+  data = gzhou_roads_sample,
+  x = ~lst,
+  y = ~ndvi,
+  type = "scatter",
+  mode = "markers",
+  marker = list(size = 6, color = "#4C72B0", opacity = 0.7),
+  name = "Roads"
+) %>%
+  add_trace(
+    x = lst_range,
+    y = trend_pred,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#D9534F", width = 2),
+    name = "Trend line",
+    inherit = FALSE   # <-- prevents it from inheriting the marker settings above
+  ) %>%
+  layout(
+    title = paste0("LST vs NDVI (r = ", round(correlation, 3), ")"),
+    xaxis = list(title = "LST"),
+    yaxis = list(title = "NDVI")
+  )
+
+scatter_lst_ndvi
+```
+
+```{r message=FALSE, warning=FALSE}
+# LST/NDVI correlation for Rdam
+library(plotly)
+
+# Correlation coefficient
+correlation <- cor(roads_sample$lst, roads_sample$ndvi, use = "complete.obs")
+
+# Linear model for the trend line
+lm_fit <- lm(ndvi ~ lst, data = roads_sample)
+lst_range <- seq(min(roads_sample$lst, na.rm = TRUE),
+                  max(roads_sample$lst, na.rm = TRUE),
+                  length.out = 100)
+trend_pred <- predict(lm_fit, newdata = data.frame(lst = lst_range))
+
+scatter_lst_ndvi <- plot_ly(
+  data = roads_sample,
+  x = ~lst,
+  y = ~ndvi,
+  type = "scatter",
+  mode = "markers",
+  marker = list(size = 6, color = "#4C72B0", opacity = 0.7),
+  name = "Roads"
+) %>%
+  add_trace(
+    x = lst_range,
+    y = trend_pred,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "#D9534F", width = 2),
+    name = "Trend line",
+    inherit = FALSE   # <-- prevents it from inheriting the marker settings above
+  ) %>%
+  layout(
+    title = paste0("Rotterdam: LST vs NDVI (r = ", round(correlation, 3), ")"),
+    xaxis = list(title = "LST"),
+    yaxis = list(title = "NDVI")
+  )
+
+scatter_lst_ndvi
 ```
 
 # Discussion
