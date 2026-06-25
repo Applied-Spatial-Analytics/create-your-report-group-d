@@ -1,5 +1,5 @@
 ---
-title: "Blue-Green Infrastructure and Urban Heat Island Intensity Across Spatial Resolutions"
+title: "Multi-Scale Spatial Analysis for Nature-Based Urban Heat Island Mitigation"
 subtitle: "ARFW0501 – Group D Project Report"
 author:
   - name: "Artemi Kurski"
@@ -206,7 +206,7 @@ In light of this we aim to explore the following research question:
 
 ```{=html}
 <div class="cluster-card cluster-card-full">
-  How do blue-green infrastructures influence Urban Heat Island (UHI) intensity across different spatial resolutions?
+  How can multi-scale spatial analysis be used to identify locations where nature-based solutions can most effectively mitigate urban heat island effects and what nature-based solutions are suitable on street level ?
 </div>
 ```
 
@@ -218,7 +218,7 @@ To answer the research question, we focus on two case study cities: Rotterdam an
 
 ## Methods
 
-Our methodology relies on a dual-scale approach to understand the urban climate. We analyzed both macro-level administrative boundaries (Dutch *buurten* and Chinese *jiedao*) and micro-level street networks. By sticking entirely to open-source data—primarily OpenStreetMap (OSM) and Landsat satellite imagery—we ensured that the pipeline built for Rotterdam could be directly transferred to Guangzhou without coordinate or data availability issues.
+Our methodology relies on a dual - scale approach to understand the urban climate. We analyzed both macro - level administrative boundaries (Dutch *buurten* and Chinese *jiedao*) and micro - level street networks. By sticking entirely to open-source data—primarily OpenStreetMap (OSM) and Landsat satellite imagery, we ensured that the pipeline built for Rotterdam could be directly transferred to Guangzhou without coordinate or data availability issues.
 
 # Getting started
 
@@ -248,45 +248,129 @@ For this purpose, **Google Earth Engine (GEE)** was used to access and process t
 ```{=html}
 <div class="widget-shell">
 <h4>Pipeline overview</h4>
+
 <div class="workflow-step">
   <div class="step-num">1</div>
-  <div class="step-body"><strong>Data export</strong> — Landsat 8 scenes were filtered in Google Earth Engine, clouds were removed, and a selected time period was used to create LST and NDVI composites. The LCZ layer was also exported as a mosaic for further analysis. </div>
+  <div class="step-body"><strong>Data extraction</strong> — Raster data (LCZ, LST, NDVI) and vector data (administrative units, roads) were extracted to form the basis of all subsequent spatial analysis.</div>
 </div>
+
 <div class="workflow-step">
   <div class="step-num">2</div>
-  <div class="step-body"><strong>Neighbourhood level feature extraction</strong> — For each neighbourhood polygon, mean LST, mean NDVI, and the dominant LCZ class were extracted to summarise local climate and land cover conditions.</div>
+  <div class="step-body"><strong>Process data</strong> — Land Surface Temperature was normalised to enable consistent comparison across neighbourhoods and time periods.</div>
 </div>
 
 <div class="workflow-step">
   <div class="step-num">3</div>
-  <div class="step-body"><strong>Identifying neighbourhoods</strong> — Identified the neighbourhoods which showed distinct differences in LST, LCZ and NDVI when compared to the rest of the neighbourhoods.</div>
+  <div class="step-body"><strong>Computing vectors</strong> — At the neighbourhood level, mean LST, mean NDVI, and the dominant LCZ class were computed. At the street level, Pedestrian Space Temperature (PST), LST, NDVI, and LCZ were calculated per road segment.</div>
 </div>
+
 <div class="workflow-step">
   <div class="step-num">4</div>
-  <div class="step-body"><strong>PST betweenness analysis</strong> — Betweenness centrality was computed for the pedestrian network</div>
+  <div class="step-body"><strong>Identify hot neighbourhoods</strong> — Neighbourhoods showing distinct differences in LST, LCZ, and NDVI relative to the rest of the city were identified as thermal hotspots for further analysis.</div>
 </div>
+
 <div class="workflow-step">
   <div class="step-num">5</div>
-  <div class="step-body"><strong>Street-segment clustering</strong> — Grouped the street segments into clusters using K-Means based on connectivity (betweenness centrality), temperature (LST), and vegetation (NDVI).</div>
+  <div class="step-body"><strong>Street-segment clustering</strong> — Road segments within hot neighbourhoods were grouped into clusters using K-Means based on NDVI (vegetation), LCZ (urban form), and PST (pedestrian thermal exposure).</div>
 </div>
+
 <div class="workflow-step">
   <div class="step-num">6</div>
-  <div class="step-body"><strong>Ground truth sampling</strong> — Random street selections from the high-activity, high-heat clusters and were chosen and verified through Google Street View.</div>
+  <div class="step-body"><strong>Describe clusters</strong> — Clusters were characterised and ground-truthed through Google Street View imagery to verify thermal and land cover conditions on the ground.</div>
 </div>
+
 <div class="workflow-step">
   <div class="step-num">7</div>
-  <div class="step-body"><strong>Reproduce for Guangzhou</strong> — The steps were reproduced for Guangzhou and a comparitive analysis of the two cities was done</div>
+  <div class="step-body"><strong>Propose nature-based solutions</strong> — Based on cluster characteristics, targeted nature-based solutions were proposed per street segment type to address heat exposure.</div>
 </div>
+
+<div class="workflow-step">
+  <div class="step-num">8</div>
+  <div class="step-body"><strong>Guangzhou comparison</strong> — The full pipeline was reproduced for Guangzhou and a comparative analysis of LCZ, PST, and mean NDVI was conducted between the two cities.</div>
+</div>
+
 </div>
 ```
 
----
+## Typology construction
 
-## Intermediate analysis
+Instead of designing climate adaptations for thousands of individual streets or dozens of neighborhoods one by one, we grouped the urban fabric into distinct "typologies." These are essentially microclimate personas: clusters of areas that share the same environmental and spatial DNA. If we know what works for a specific typology in Rotterdam, we can test if that same solution works for its twin typology in Guangzhou.
 
-After completing Steps 1 to 3, the following results were obtained, which formed the basis for initiating Step 4.
+We constructed these typologies across two distinct spatial scales:
 
-### Rotterdam
+**1. Data Acquisition and Indicator Processing**  
+First, we established the thermal and physical baseline of the cities. Using Google Earth Engine, we pulled summer 2025 data from Landsat 8 (30m resolution) to calculate two key metrics:
+
+*   **Vegetation (NDVI):** To measure the density of green infrastructure.
+*   **Land Surface Temperature (LST):** To map the thermal landscape. To ensure accuracy across different satellite capture dates, we normalized the LST data by calculating the deviation from the spatial mean of each image, giving us a clean look at localized heat anomalies rather than day-to-day weather spikes. 
+
+For urban morphology, we integrated the RUBCLIM Local Climate Zone (LCZ) dataset (100m resolution), which categorizes the physical build of the city into classes ranging from "Compact High-Rise" to "Sparsely Built."
+
+**2. Pedestrian Accessibility (PST Engine)**  
+To figure out how human-friendly these environments actually are, we couldn't just look at satellite pixels; we had to simulate how people move. Using OSM walking networks, we built a Python-based graph network to calculate Pedestrian Space Syntax (PST) accessibility. 
+
+We identified "cooling hubs" (neighborhoods with an NDVI above the city median) and mapped their center points. The algorithm then simulated human navigation, counting the number of topological turns required to reach these cooling zones from any point on the street network. Paths requiring fewer than three turns received higher accessibility scores, mathematically penalizing areas that are cut off from blue-green infrastructure. 
+
+**3. Macro-Scale Clustering (Neighborhoods)**  
+With our variables set (Mean LST, Mean NDVI, LCZ class, and PST score), we aggregated the data up to the neighborhood level using zonal statistics. Because our data was mixed (blending continuous numbers like temperature with categorical tags like LCZ codes), standard clustering methods wouldn't work. 
+
+Instead, we ran the data through R using a Gower distance matrix, which is specifically designed to handle mixed data types. We then applied Partitioning Around Medoids (PAM) clustering to group the neighborhoods into four distinct microclimate profiles.
+
+**4. Micro-Scale Clustering (Street Segments)**  
+Finally, we brought the analysis down to the human scale to find the most vulnerable individual streets. Using Python and Geopandas, we slightly buffered the OSM street linestrings and extracted the exact LST and NDVI pixel values sitting directly under the pavement, while sampling the LCZ classification at the start point of each street. 
+
+After dealing with missing values and standardizing the numeric data, we used an elbow plot to determine the optimal number of clusters and ran a MiniBatch K-Means clustering algorithm. To verify that our math matched physical reality, the pipeline randomly sampled 50 streets from our most extreme clusters and exported their coordinates to a CSV, allowing us to drop into Google Street View and qualitatively inspect the physical characteristics of the hottest streets in the city.
+
+```{r message=FALSE, warning=FALSE}
+library(sf)
+library(dplyr)
+library(plotly)
+
+# Read the layer from the GeoPackage
+invisible(capture.output(
+  roads_data <- st_read("data/rotterdam/rotterdam_roads_clustered.gpkg",
+                        layer = "rotterdam_roads_data")
+))
+
+# Randomly select 500 rows
+set.seed(42)  # remove or change this if you don't want reproducible sampling
+roads_sample <- roads_data %>% slice_sample(n = 500)
+
+# Colors for clusters 0-5
+cluster_colors <- c(
+  "0" = "#4C72B0",
+  "1" = "#65C3A1",
+  "2" = "#FC9964",
+  "3" = "#869DC5",
+  "4" = "#E597C0",
+  "5" = "#D9C04C"
+)
+
+cluster3d_scaled <- plot_ly(
+  x = roads_sample$lst,
+  y = roads_sample$ndvi,
+  z = roads_sample$Bww1kM,
+  type = "scatter3d",
+  mode = "markers",
+  color = as.factor(roads_sample$cluster),
+  colors = cluster_colors,
+  marker = list(size = 3)
+) %>%
+  layout(
+    scene = list(
+      xaxis = list(title = "lst"),
+      yaxis = list(title = "ndvi"),
+      zaxis = list(title = "Bww1kM")
+    )
+  )
+cluster3d_scaled
+```
+
+
+## Small-scale output: Rotterdam
+
+After completing step 1 and 2, the following results were obtained, which formed the basis for further analysis.
+
 ```{=html}
 <div class="map-figure">
   <img src="Report data/Images/Rotterdam/rotterdam_ndvi_map.png"
@@ -312,7 +396,74 @@ After completing Steps 1 to 3, the following results were obtained, which formed
   </div>
 </div>
 ```
-### Guangzhou
+
+
+From the analysis, three neighbourhoods stand out as showing extreme variation relative to the rest of the city: **Bloemhof, Afrikaanderwijk, and Hillesluis**.
+
+```{=html}
+<div class="map-figure">
+<div style="display: flex; align-items: flex-start; gap: 32px; padding: 1rem 0;">
+
+  <img src="Report data/Images/Rotterdam/Street-wise-clustering.png" alt="Street-wise clustering map" style="width: 65%; border-radius: 8px;">
+
+  <div style="flex: 1;">
+    <h3 style="font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 4px;">Street-wise clustering</h3>
+    <p style="font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin: 0 0 20px;">relating LST, NDVI and PST</p>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #8ab4e8; flex-shrink: 0;"></span>
+        <span style="font-size: 13px; color: var(--color-text-secondary);">0. &nbsp; High LST &nbsp;/&nbsp; Low NDVI &nbsp;/&nbsp; Elevated PST</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #c9b84c; flex-shrink: 0;"></span>
+        <span style="font-size: 13px; color: var(--color-text-secondary);">1. &nbsp; Medium LST &nbsp;/&nbsp; Medium NDVI &nbsp;/&nbsp; High PST</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #4caf72; flex-shrink: 0;"></span>
+        <span style="font-size: 13px; color: var(--color-text-secondary);">2. &nbsp; Low LST &nbsp;/&nbsp; High NDVI &nbsp;/&nbsp; Low PST</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #2a5fa8; flex-shrink: 0;"></span>
+        <span style="font-size: 13px; color: var(--color-text-secondary);">3. &nbsp; Low LST &nbsp;/&nbsp; Low NDVI &nbsp;/&nbsp; High PST</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #e87bb0; flex-shrink: 0;"></span>
+        <span style="font-size: 13px; color: var(--color-text-secondary);">4. &nbsp; Medium LST &nbsp;/&nbsp; Medium NDVI &nbsp;/&nbsp; High PST</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #e8824a; flex-shrink: 0;"></span>
+        <span style="font-size: 13px; color: var(--color-text-secondary);">5. &nbsp; Medium LST &nbsp;/&nbsp; Medium NDVI &nbsp;/&nbsp; Low PST</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Small-scale output: Guangzhou
 ```{=html}
 <div class="map-figure">
   <img src="Report data/Images/Guangzhou/NDVI_guangzhou.jpeg"
@@ -339,32 +490,138 @@ After completing Steps 1 to 3, the following results were obtained, which formed
 </div>
 ```
 
-## PST Betweeness centrality
 
-PST for the neighbourhood Ommard.
+
+
+
+# Results
+
+## Rotterdam: Street-view and Nature based solutions
 
 ```{=html}
-<div class="map-figure">
-  <img src="Report data/Images/Rotterdam/om_ndvi_map.png"/>
-  <div class="map-caption">
-    <strong>Figure 7.</strong> Ommard Neighbourhood (Rotterdam) Relative NDVI for streets.
+<style>
+.map-container { position: relative; display: inline-block; }
+.map-img { width: 200px; border-radius: 8px; display: block; }
+.dot { position: absolute; width: 14px; height: 14px; border: 2px solid white; border-radius: 50%; animation: pulse 2s infinite; cursor: pointer; transition: transform 0.2s; transform: translate(-50%, -50%); }
+.dot:hover { transform: translate(-50%, -50%) scale(1.3); }
+.dot.active { outline: 3px solid white; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+.sv-card { display: none; position: relative; border-radius: 8px; overflow: hidden; }
+.sv-card.visible { display: block; }
+.sv-card img { width: 100%; border-radius: 8px; display: block; aspect-ratio: 16/9; object-fit: cover; }
+.sv-card .sv-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; padding: 4px 8px; }
+.info-panel { display: none; margin-top: 14px; }
+.info-panel.visible { display: flex; align-items: flex-start; gap: 16px; }
+.info-text { flex: 1; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+.info-text h3 { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 8px; }
+.info-text ul { font-size: 14px; color: var(--color-text-secondary); line-height: 2; padding-left: 1rem; margin: 0; }
+.info-ref-img { width: 240px; flex-shrink: 0; border-radius: 10px; object-fit: cover; aspect-ratio: 9/16; }
+.hint { font-size: 12px; color: var(--color-text-tertiary); margin-top: 6px; }
+.module-box { border: 1px solid #ccc; border-radius: 12px; padding: 20px; }
+.module-title { font-size: 24px; font-weight: 1000; color: var(--color-text-primary); margin: 0 0 16px; }
+</style>
+
+<div class="module-box">
+
+  <p class="module-title">Street-level observations</p>
+
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+
+    <div>
+      <div class="map-container">
+        <img class="map-img" src="Report data/Images/Rotterdam/street-views/neighbourhood.png" alt="Neighbourhood map">
+        <div class="dot" style="top: 75%; left: 77%; background: #2ecc71;" onclick="selectDot(0, this)" title="Vlasakkersstraat"></div>
+        <div class="dot" style="top: 45%; left: 45%; background: #e74c3c;" onclick="selectDot(1, this)" title="Anemoonstraat"></div>
+        <div class="dot" style="top: 30%; left: 20%; background: #3498db;" onclick="selectDot(2, this)" title="Jouberstraat"></div>
+      </div>
+      <p class="hint" style="text-align: center;">Click a dot to see street view</p>
+    </div>
+
+    <div id="sv-panel" style="display: none; width: 100%;">
+      <div class="sv-card" id="card-0">
+        <img src="Report data/Images/Rotterdam/street-views/street-1.png" alt="Street view 1">
+        <div class="sv-label">📍 Vlasakkersstraat</div>
+      </div>
+      <div class="sv-card" id="card-1">
+        <img src="Report data/Images/Rotterdam/street-views/street-2.png" alt="Street view 2">
+        <div class="sv-label">📍 Anemoonstraat</div>
+      </div>
+      <div class="sv-card" id="card-2">
+        <img src="Report data/Images/Rotterdam/street-views/street-3.png" alt="Street view 3">
+        <div class="sv-label">📍 Jouberstraat</div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="info-panel" style="width: 100%;">
+      <img id="info-ref-img" class="info-ref-img" src="" alt="Reference image">
+      <div class="info-text">
+        <h3 id="info-title"></h3>
+        <ul id="info-list"></ul>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="map-figure">
-  <img src="Report data/Images/Rotterdam/om_lst_map.png"/>
-  <div class="map-caption">
-    <strong>Figure 8.</strong> Ommard Neighbourhood (Rotterdam) Relative LST for streets.
-  </div>
-</div>
+<script>
+const streetInfo = [
+  {
+    title: "Vlasakkersstraat — Green facades",
+    img: "Report data/Images/Rotterdam/street-views/solutions/green-facade.png",
+    points: [
+      "Limited space available for ground-level planting",
+      "Increased insulation of building facades",
+      "Reduces surface temperature and air pollution"
+    ]
+  },
+  {
+    title: "Anemoonstraat — Street trees",
+    img: "Report data/Images/Rotterdam/street-views/solutions/free-standing-wall.png",
+    points: [
+      "Wide pavement allows tree pit installation",
+      "Provides shade and reduces pedestrian heat stress",
+      "Improves stormwater absorption"
+    ]
+  },
+  {
+    title: "Jouberstraat — Permeable paving",
+    img: "Report data/Images/Rotterdam/street-views/solutions/group-of-trees.png",
+    points: [
+      "High impervious surface coverage",
+      "Permeable pavers reduce surface runoff",
+      "Supports evaporative cooling at street level"
+    ]
+  }
+];
 
-<div class="map-figure">
-  <img src="Report data/Images/Rotterdam/om_lcz_map.png"/>
-  <div class="map-caption">
-    <strong>Figure 9.</strong> Ommard Neighbourhood (Rotterdam) LCZ classification on streets.
-  </div>
-</div>
+let activeDot = null;
+
+function selectDot(index, dotEl) {
+  if (activeDot) activeDot.classList.remove('active');
+  activeDot = dotEl;
+  dotEl.classList.add('active');
+
+  document.querySelectorAll('.sv-card').forEach((c, i) => {
+    c.classList.toggle('visible', i === index);
+  });
+
+  document.getElementById('sv-panel').style.display = 'block';
+
+  const info = streetInfo[index];
+  document.getElementById('info-title').textContent = info.title;
+  document.getElementById('info-list').innerHTML = info.points.map(p => `<li>${p}</li>`).join('');
+  document.getElementById('info-ref-img').src = info.img;
+  document.getElementById('info-panel').classList.add('visible');
+}
+</script>
 ```
+
+
+## Gunagzhou: Street-view and Nature based solutions
+
+
+
+
 
 ```{=html}
 <div class="widget-shell">
@@ -510,82 +767,6 @@ ndviBtn.onclick = () => {
 };
 </script>
 ```
-
-
-
-# Typology construction
-
-Instead of designing climate adaptations for thousands of individual streets or dozens of neighborhoods one by one, we grouped the urban fabric into distinct "typologies." These are essentially microclimate personas: clusters of areas that share the same environmental and spatial DNA. If we know what works for a specific typology in Rotterdam, we can test if that same solution works for its twin typology in Guangzhou.
-
-We constructed these typologies across two distinct spatial scales:
-
-**1. Data Acquisition and Indicator Processing**  
-First, we established the thermal and physical baseline of the cities. Using Google Earth Engine, we pulled summer 2025 data from Landsat 8 (30m resolution) to calculate two key metrics:
-
-*   **Vegetation (NDVI):** To measure the density of green infrastructure.
-*   **Land Surface Temperature (LST):** To map the thermal landscape. To ensure accuracy across different satellite capture dates, we normalized the LST data by calculating the deviation from the spatial mean of each image, giving us a clean look at localized heat anomalies rather than day-to-day weather spikes. 
-
-For urban morphology, we integrated the RUBCLIM Local Climate Zone (LCZ) dataset (100m resolution), which categorizes the physical build of the city into classes ranging from "Compact High-Rise" to "Sparsely Built."
-
-**2. Pedestrian Accessibility (PST Engine)**  
-To figure out how human-friendly these environments actually are, we couldn't just look at satellite pixels; we had to simulate how people move. Using OSM walking networks, we built a Python-based graph network to calculate Pedestrian Space Syntax (PST) accessibility. 
-
-We identified "cooling hubs" (neighborhoods with an NDVI above the city median) and mapped their center points. The algorithm then simulated human navigation, counting the number of topological turns required to reach these cooling zones from any point on the street network. Paths requiring fewer than three turns received higher accessibility scores, mathematically penalizing areas that are cut off from blue-green infrastructure. 
-
-**3. Macro-Scale Clustering (Neighborhoods)**  
-With our variables set (Mean LST, Mean NDVI, LCZ class, and PST score), we aggregated the data up to the neighborhood level using zonal statistics. Because our data was mixed (blending continuous numbers like temperature with categorical tags like LCZ codes), standard clustering methods wouldn't work. 
-
-Instead, we ran the data through R using a Gower distance matrix, which is specifically designed to handle mixed data types. We then applied Partitioning Around Medoids (PAM) clustering to group the neighborhoods into four distinct microclimate profiles.
-
-**4. Micro-Scale Clustering (Street Segments)**  
-Finally, we brought the analysis down to the human scale to find the most vulnerable individual streets. Using Python and Geopandas, we slightly buffered the OSM street linestrings and extracted the exact LST and NDVI pixel values sitting directly under the pavement, while sampling the LCZ classification at the start point of each street. 
-
-After dealing with missing values and standardizing the numeric data, we used an elbow plot to determine the optimal number of clusters and ran a MiniBatch K-Means clustering algorithm. To verify that our math matched physical reality, the pipeline randomly sampled 50 streets from our most extreme clusters and exported their coordinates to a CSV, allowing us to drop into Google Street View and qualitatively inspect the physical characteristics of the hottest streets in the city.
-
-```{r}
-library(sf)
-library(dplyr)
-library(plotly)
-
-# Read the layer from the GeoPackage
-roads_data <- st_read("data/rotterdam/rotterdam_roads_clustered.gpkg",
-                       layer = "rotterdam_roads_data")
-
-# Randomly select 500 rows
-set.seed(42)  # remove or change this if you don't want reproducible sampling
-roads_sample <- roads_data %>% slice_sample(n = 500)
-
-# Colors for clusters 0-5
-cluster_colors <- c(
-  "0" = "#4C72B0",
-  "1" = "#65C3A1",
-  "2" = "#FC9964",
-  "3" = "#869DC5",
-  "4" = "#E597C0",
-  "5" = "#D9C04C"
-)
-
-cluster3d_scaled <- plot_ly(
-  x = roads_sample$lst,
-  y = roads_sample$ndvi,
-  z = roads_sample$Bww1kM,
-  type = "scatter3d",
-  mode = "markers",
-  color = as.factor(roads_sample$cluster),
-  colors = cluster_colors,
-  marker = list(size = 3)
-) %>%
-  layout(
-    scene = list(
-      xaxis = list(title = "lst"),
-      yaxis = list(title = "ndvi"),
-      zaxis = list(title = "Bww1kM")
-    )
-  )
-cluster3d_scaled
-```
-
-# Results
 
 # Discussion
 
