@@ -1,0 +1,94 @@
+<style>
+  .map-img { width: 350px; }
+  .sv-card img { aspect-ratio: 16/9; }
+</style>
+
+<div class="module-box">
+<p class="module-title">Street-level observations</p>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+
+  <div>
+    <div class="map-container">
+      <img class="map-img" src="Report data/Images/Guangzhou/yuexiu-lst.png" alt="Neighbourhood map">
+      <div class="dot" style="top: 30%; left: 20%; background: #2ecc71;" onclick="selectDotGZ(0, this)"></div>
+      <div class="dot" style="top: 45%; left: 45%; background: #2ecc71;" onclick="selectDotGZ(1, this)"></div>
+      <div class="dot" style="top: 52%; left: 55%; background: #2ecc71;" onclick="selectDotGZ(2, this)"></div>
+    </div>
+    <p class="hint" style="text-align: center;">Click a dot to see street view</p>
+  </div>
+
+  <div id="gz-sv-panel" style="display: none; width: 100%;">
+    <div class="sv-card" id="gz-card-0">
+      <img src="Report data/Images/Guangzhou/street-views/point-1.jpg">
+    </div>
+    <div class="sv-card" id="gz-card-1">
+      <img src="Report data/Images/Guangzhou/street-views/point-2.jpg">
+    </div>
+    <div class="sv-card" id="gz-card-2">
+      <img src="Report data/Images/Guangzhou/street-views/point-3.jpg">
+    </div>
+  </div>
+
+  <div class="info-panel" id="gz-info-panel" style="width: 100%;">
+    <img id="gz-info-ref-img" class="info-ref-img" src="" alt="Reference NbS image">
+    <div class="info-text">
+      <h3 id="gz-info-title"></h3>
+      <ul id="gz-info-list"></ul>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const streetInfoGZ = [
+  {
+    title: "Solution — Green facades",
+    img: "Report data/Images/Guangzhou/street-views/solutions/green-facade.png",
+    points: [
+      "Suitable where horizontal space is limited",
+      "Increases urban vegetation without requiring street restructuring",
+      "Reduces surface temperature and air pollution"
+    ]
+  },
+  {
+    title: "Solution — Free standing living walls",
+    img: "Report data/Images/Guangzhou/street-views/solutions/free-standing-wall.png",
+    points: [
+        "The elevated temperature at this location is largely attributable to the presence of a major overpass highway, whose road network contributes significantly to localised heat accumulation.",
+      "Suitable where some street space is available but full restructuring is not feasible",
+      "Increases urban vegetation without requiring changes to the street layout",
+      "Reduces surface temperature and air pollution"
+    ]
+  },
+  {
+    title: "Solution — Groups of trees",
+    img: "Report data/Images/Guangzhou/street-views/solutions/group-of-trees.png",
+    points: [
+      "Requires more open space but delivers stronger cooling effects",
+      "Combined shading and evapotranspiration significantly improves pedestrian thermal comfort",
+      "Reduces air temperature, air pollution, and enhances overall street quality"
+    ]
+  }
+];
+
+let activeGZDot = null;
+
+function selectDotGZ(index, dotEl) {
+  if (activeGZDot) activeGZDot.classList.remove('active');
+  activeGZDot = dotEl;
+  dotEl.classList.add('active');
+
+  document.querySelectorAll('#gz-sv-panel .sv-card').forEach((c, i) => {
+    c.classList.toggle('visible', i === index);
+  });
+
+  document.getElementById('gz-sv-panel').style.display = 'block';
+
+  const info = streetInfoGZ[index];
+  document.getElementById('gz-info-title').textContent = info.title;
+  document.getElementById('gz-info-list').innerHTML = info.points.map(p => `<li>${p}</li>`).join('');
+  document.getElementById('gz-info-ref-img').src = info.img;
+  document.getElementById('gz-info-panel').classList.add('visible');
+}
+</script>
