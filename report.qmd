@@ -357,6 +357,7 @@ cluster3d_scaled <- plot_ly(
   marker = list(size = 3)
 ) %>%
   layout(
+    title = "Street clusters in Rotterdam",
     scene = list(
       xaxis = list(title = "LST"),
       yaxis = list(title = "NDVI"),
@@ -804,6 +805,7 @@ cluster3d_scaled <- plot_ly(
   marker = list(size = 3)
 ) %>%
   layout(
+    title = "Street clusters in Guangzhou",
     scene = list(
       xaxis = list(title = "LST"),
       yaxis = list(title = "NDVI"),
@@ -834,20 +836,22 @@ scatter_lst_ndvi <- plot_ly(
   y = ~ndvi,
   type = "scatter",
   mode = "markers",
-  marker = list(size = 6, color = "#4C72B0", opacity = 0.7),
-  name = "Roads"
+  color = ~as.factor(cluster),
+  colors = cluster_colors,
+  marker = list(size = 6, opacity = 0.7),
+  name = ~as.factor(cluster)
 ) %>%
   add_trace(
     x = lst_range,
     y = trend_pred,
     type = "scatter",
     mode = "lines",
-    line = list(color = "#D9534F", width = 2),
+    line = list(color = "#000000", width = 2, dash = "dash"),
     name = "Trend line",
     inherit = FALSE   # <-- prevents it from inheriting the marker settings above
   ) %>%
   layout(
-    title = paste0("LST vs NDVI (r = ", round(correlation, 3), ")"),
+    title = paste0("Guangzhou: LST vs NDVI (r = ", round(correlation, 3), ")"),
     xaxis = list(title = "LST"),
     yaxis = list(title = "NDVI")
   )
@@ -875,15 +879,17 @@ scatter_lst_ndvi <- plot_ly(
   y = ~ndvi,
   type = "scatter",
   mode = "markers",
-  marker = list(size = 6, color = "#4C72B0", opacity = 0.7),
-  name = "Roads"
+  color = ~as.factor(cluster),
+  colors = cluster_colors,
+  marker = list(size = 6, opacity = 0.7),
+  name = ~as.factor(cluster)
 ) %>%
   add_trace(
     x = lst_range,
     y = trend_pred,
     type = "scatter",
     mode = "lines",
-    line = list(color = "#D9534F", width = 2),
+    line = list(color = "#000000", width = 2, dash = "dash"),
     name = "Trend line",
     inherit = FALSE   # <-- prevents it from inheriting the marker settings above
   ) %>%
@@ -894,6 +900,61 @@ scatter_lst_ndvi <- plot_ly(
   )
 
 scatter_lst_ndvi
+```
+
+```{r message=FALSE, warning=FALSE}
+library(sf)
+library(dplyr)
+library(plotly)
+
+# Compute % of total segment length per cluster for one roads dataset
+cluster_length_pct <- function(roads_data, all_clusters = names(cluster_colors)) {
+  roads_data$seg_length <- as.numeric(st_length(roads_data))
+
+  pct_df <- roads_data %>%
+    st_drop_geometry() %>%
+    mutate(cluster = as.character(cluster)) %>%
+    group_by(cluster) %>%
+    summarise(total_length = sum(seg_length, na.rm = TRUE), .groups = "drop") %>%
+    mutate(pct = 100 * total_length / sum(total_length))
+
+  tibble(cluster = all_clusters) %>%
+    left_join(pct_df, by = "cluster") %>%
+    mutate(pct = ifelse(is.na(pct), 0, pct))
+}
+
+# Build a grouped bar chart: cities on shared x-axis, bars colored by cluster
+# data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
+plot_cluster_bar <- function(data_list, colors = cluster_colors) {
+  combined_df <- bind_rows(
+    lapply(names(data_list), function(city_name) {
+      cluster_length_pct(data_list[[city_name]]) %>%
+        mutate(city = city_name)
+    })
+  )
+
+  plot_ly(
+    data = combined_df,
+    x = ~city,
+    y = ~pct,
+    color = ~cluster,
+    colors = colors,
+    type = "bar"
+  ) %>%
+    layout(
+      title = "% of total road segment length by cluster",
+      xaxis = list(title = ""),
+      yaxis = list(title = "% of total length", ticksuffix = "%"),
+      barmode = "group",
+      legend = list(title = list(text = "Cluster"))
+    )
+}
+
+bar_chart <- plot_cluster_bar(
+  list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
+)
+bar_chart
+
 ```
 
 # Discussion
