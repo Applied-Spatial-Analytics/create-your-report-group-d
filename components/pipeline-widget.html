@@ -1,0 +1,44 @@
+<div class="widget-shell">
+<h4>Pipeline overview</h4>
+
+<div class="workflow-step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Data extraction</strong> — Raster data (LCZ, LST, NDVI) and vector data (administrative units, roads) were extracted to form the basis of all subsequent spatial analysis.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Process data</strong> — Land Surface Temperature was normalised to enable consistent comparison across neighbourhoods and time periods.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Computing vectors</strong> — At the neighbourhood level, mean LST, mean NDVI, and the dominant LCZ class were computed. At the street level, Pedestrian Space Temperature (PST), LST, NDVI, and LCZ were calculated per road segment.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Identify hot neighbourhoods</strong> — Neighbourhoods showing distinct differences in LST, LCZ, and NDVI relative to the rest of the city were identified as thermal hotspots for further analysis.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">5</div>
+  <div class="step-body"><strong>Street-segment clustering</strong> — Road segments within hot neighbourhoods were grouped into clusters using K-Means based on NDVI (vegetation), LCZ (urban form), and PST (pedestrian thermal exposure).</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">6</div>
+  <div class="step-body"><strong>Describe clusters</strong> — Clusters were characterised and ground-truthed through Google Street View imagery to verify thermal and land cover conditions on the ground.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">7</div>
+  <div class="step-body"><strong>Propose nature-based solutions</strong> — Based on cluster characteristics, targeted nature-based solutions were proposed per street segment type to address heat exposure.</div>
+</div>
+
+<div class="workflow-step">
+  <div class="step-num">8</div>
+  <div class="step-body"><strong>Guangzhou comparison</strong> — The full pipeline was reproduced for Guangzhou and a comparative analysis of LCZ, PST, and mean NDVI was conducted between the two cities.</div>
+</div>
+
+</div>
