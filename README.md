@@ -14,7 +14,7 @@ The project investigates the intersection of urban morphology (Local Climate Zon
 * **`report.qmd` & `report.html`**: Quarto markdown file and resulting compiled HTML for the report.
 * **`asa2025-report.Rproj`**: RStudio project file for managing relative paths and environments.
 
-## Dependencies & Installation
+## <a id="dependencies"></a>Dependencies & Installation
 
 To run the scripts in this repository, you will need both a Python and an R environment set up. 
 
@@ -22,7 +22,7 @@ To run the scripts in this repository, you will need both a Python and an R envi
 The Earth Engine, spatial data processing, and machine learning scripts require Python 3.x. You can install all required packages using `pip`:
 
 ```bash
-pip install earthengine-api geemap geopandas rasterio rasterstats osmnx shapely numpy pandas fiona tqdm scikit-learn requests
+pip install earthengine-api geemap geopandas rasterio rasterstats osmnx shapely numpy pandas fiona tqdm scikit-learn requests joblib
 ```
 
 ### R Dependencies
@@ -58,7 +58,7 @@ The project follows a sequential pipeline applied to both Rotterdam and Guangzho
 
 ## How to Run
 
-1.  **Environment Setup**: Install all the prerequsites mentioned in the [dependencies](#dependencies-installation) or the code files itself.
+1.  **Environment Setup**: Install all the prerequsites mentioned in the [dependencies](#dependencies) or the code files itself.
 2.  **Earth Engine Authentication**: Run the first cell of either Jupyter notebook. You will be prompted to authenticate your Google account to use the Earth Engine API.
 3.  **Generate Rasters & Raw Networks**: Execute `Code/rotterdam.ipynb` and `Code/guangzhou.ipynb` up to the QGIS intervention warning.
 4.  **Process Space Syntax**: 
