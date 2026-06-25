@@ -816,6 +816,73 @@ cluster3d_scaled
 ```
 
 ```{r message=FALSE, warning=FALSE}
+library(sf)
+library(dplyr)
+library(plotly)
+
+# Convert a hex color to an rgba() string with a given alpha (reused from earlier)
+hex_to_rgba <- function(hex, alpha) {
+  rgb_vals <- col2rgb(hex)
+  sprintf("rgba(%d,%d,%d,%.2f)", rgb_vals[1], rgb_vals[2], rgb_vals[3], alpha)
+}
+
+# Violin plots for LST and NDVI, one subplot per variable, one violin per city within each
+# data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
+plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
+                                  line_opacity = 0.8, fill_opacity = 0.4,
+                                  title = "Distribution of LST and NDVI by city") {
+
+  combined <- bind_rows(lapply(names(data_list), function(city_name) {
+    data_list[[city_name]] %>%
+      st_drop_geometry() %>%
+      select(lst, ndvi) %>%
+      mutate(city = city_name)
+  })) %>%
+    mutate(city = factor(city, levels = names(data_list)))  # fixed left-to-right order
+
+  # Build one violin subplot for a given variable (e.g. "lst" or "ndvi")
+  build_panel <- function(var, y_title, show_legend) {
+    p <- plot_ly()
+    for (i in seq_along(data_list)) {
+      city_name <- names(data_list)[i]
+      sub <- combined %>% filter(city == city_name)
+
+      p <- p %>% add_trace(
+        type = "violin",
+        x = sub$city,
+        y = sub[[var]],
+        name = city_name,
+        legendgroup = city_name,
+        scalegroup = var,        # violins within a panel share scaling
+        box = list(visible = TRUE),
+        meanline = list(visible = TRUE),
+        line = list(color = hex_to_rgba(colors[i], line_opacity)),
+        fillcolor = hex_to_rgba(colors[i], fill_opacity),
+        points = FALSE,
+        showlegend = show_legend
+      )
+    }
+    p %>% layout(
+      yaxis = list(title = y_title),
+      xaxis = list(title = "")
+    )
+  }
+
+  p_lst  <- build_panel("lst",  "LST",  show_legend = TRUE)
+  p_ndvi <- build_panel("ndvi", "NDVI", show_legend = FALSE)
+
+  subplot(p_lst, p_ndvi, nrows = 1, titleY = TRUE, margin = 0.06) %>%
+    layout(
+      title = title,
+      violinmode = "group",
+      legend = list(title = list(text = "City"))
+    )
+}
+
+plot_lst_ndvi_violin(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
+```
+
+```{r message=FALSE, warning=FALSE}
 # LST/NDVI correlation for Gzhou
 
 library(plotly)
@@ -907,54 +974,259 @@ library(sf)
 library(dplyr)
 library(plotly)
 
-# Compute % of total segment length per cluster for one roads dataset
-cluster_length_pct <- function(roads_data, all_clusters = names(cluster_colors)) {
+lcz_labels <- c(
+  "0"  = "No data",
+  "1"  = "Compact highrise",
+  "2"  = "Compact midrise",
+  "3"  = "Compact lowrise",
+  "4"  = "Open highrise",
+  "5"  = "Open midrise",
+  "6"  = "Open lowrise",
+  "7"  = "Lightweight lowrise",
+  "8"  = "Large lowrise",
+  "9"  = "Sparsely built",
+  "10" = "Heavy industry",
+  "11" = "Dense trees (LCZ A)",
+  "12" = "Scattered trees (LCZ B)",
+  "13" = "Bush, scrub (LCZ C)",
+  "14" = "Low plants (LCZ D)",
+  "15" = "Bare rock/paved (LCZ E)",
+  "16" = "Bare soil/sand (LCZ F)",
+  "17" = "Water (LCZ G)"
+)
+lcz_short_labels <- c("0" = "no data", setNames(paste("LCZ", 1:17), as.character(1:17)))
+
+# % of a city's TOTAL road length per LCZ (no cluster grouping)
+city_lcz_pct <- function(roads_data, all_lcz = names(lcz_labels)) {
   roads_data$seg_length <- as.numeric(st_length(roads_data))
 
-  pct_df <- roads_data %>%
+  df <- roads_data %>%
     st_drop_geometry() %>%
-    mutate(cluster = as.character(cluster)) %>%
-    group_by(cluster) %>%
+    mutate(lcz = ifelse(is.na(lcz), "0", as.character(lcz))) %>%
+    group_by(lcz) %>%
     summarise(total_length = sum(seg_length, na.rm = TRUE), .groups = "drop") %>%
     mutate(pct = 100 * total_length / sum(total_length))
 
-  tibble(cluster = all_clusters) %>%
-    left_join(pct_df, by = "cluster") %>%
-    mutate(pct = ifelse(is.na(pct), 0, pct))
+  tibble(lcz = all_lcz) %>%
+    left_join(df, by = "lcz") %>%
+    mutate(
+      pct = ifelse(is.na(pct), 0, pct),
+      lcz_full = lcz_labels[lcz],
+      lcz_short = lcz_short_labels[lcz]
+    ) %>%
+    arrange(match(lcz, all_lcz))
 }
 
-# Build a grouped bar chart: cities on shared x-axis, bars colored by cluster
-# data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
-plot_cluster_bar <- function(data_list, colors = cluster_colors) {
-  combined_df <- bind_rows(
-    lapply(names(data_list), function(city_name) {
-      cluster_length_pct(data_list[[city_name]]) %>%
-        mutate(city = city_name)
-    })
-  )
+# Convert a hex color (e.g. "#4C72B0") to an rgba() string with a given alpha
+hex_to_rgba <- function(hex, alpha) {
+  rgb_vals <- col2rgb(hex)
+  sprintf("rgba(%d,%d,%d,%.2f)", rgb_vals[1], rgb_vals[2], rgb_vals[3], alpha)
+}
 
-  plot_ly(
-    data = combined_df,
-    x = ~city,
-    y = ~pct,
-    color = ~cluster,
-    colors = colors,
-    type = "bar"
-  ) %>%
+plot_city_lcz_radar <- function(data_list, colors = c("#4C72B0", "#FC9964"),
+                                 line_opacity = 0.6, fill_opacity = 0.1,
+                                 title = "LCZ composition of total road network length",
+                                 title_pad = 16) {
+  fig <- plot_ly(type = 'scatterpolar', fill = 'toself')
+
+  for (i in seq_along(data_list)) {
+    city_name <- names(data_list)[i]
+    pct_df <- city_lcz_pct(data_list[[i]])
+
+    theta_vals <- c(pct_df$lcz_short, pct_df$lcz_short[1])
+    r_vals <- c(pct_df$pct, pct_df$pct[1])
+    hover_labels <- c(pct_df$lcz_full, pct_df$lcz_full[1])
+
+    fig <- fig %>%
+      add_trace(
+        r = r_vals,
+        theta = theta_vals,
+        name = city_name,
+        text = hover_labels,
+        hovertemplate = paste0("<b>", city_name, "</b><br>%{text}: %{r:.1f}%<extra></extra>"),
+        line = list(color = hex_to_rgba(colors[i], line_opacity)),
+        marker = list(color = hex_to_rgba(colors[i], line_opacity)),
+        fillcolor = hex_to_rgba(colors[i], fill_opacity)
+        # no trace-level `opacity` — line/marker and fill now control their own alpha independently
+      )
+  }
+
+  fig %>%
     layout(
-      title = "% of total road segment length by cluster",
-      xaxis = list(title = ""),
-      yaxis = list(title = "% of total length", ticksuffix = "%"),
-      barmode = "group",
-      legend = list(title = list(text = "Cluster"))
+      polar = list(
+        domain = list(y = c(0, 0.88)),
+        radialaxis = list(visible = TRUE, ticksuffix = "%")
+      ),
+      title = list(text = title, y = 0.97, yanchor = "top"),
+      margin = list(t = title_pad)
     )
 }
 
-bar_chart <- plot_cluster_bar(
-  list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
-)
-bar_chart
+plot_city_lcz_radar(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
+```
 
+```{r message=FALSE, warning=FALSE}
+library(sf)
+library(dplyr)
+library(plotly)
+
+lcz_labels <- c(
+  "0"  = "No data",
+  "1"  = "Compact highrise",
+  "2"  = "Compact midrise",
+  "3"  = "Compact lowrise",
+  "4"  = "Open highrise",
+  "5"  = "Open midrise",
+  "6"  = "Open lowrise",
+  "7"  = "Lightweight lowrise",
+  "8"  = "Large lowrise",
+  "9"  = "Sparsely built",
+  "10" = "Heavy industry",
+  "11" = "Dense trees (LCZ A)",
+  "12" = "Scattered trees (LCZ B)",
+  "13" = "Bush, scrub (LCZ C)",
+  "14" = "Low plants (LCZ D)",
+  "15" = "Bare rock/paved (LCZ E)",
+  "16" = "Bare soil/sand (LCZ F)",
+  "17" = "Water (LCZ G)"
+)
+
+lcz_short_labels <- c("0" = "no data", setNames(paste("LCZ", 1:17), as.character(1:17)))
+
+cluster_lcz_pct <- function(roads_data, all_lcz = names(lcz_labels)) {
+  roads_data$seg_length <- as.numeric(st_length(roads_data))
+
+  df <- roads_data %>%
+    st_drop_geometry() %>%
+    mutate(
+      cluster = as.character(cluster),
+      lcz = ifelse(is.na(lcz), "0", as.character(lcz))
+    ) %>%
+    group_by(cluster, lcz) %>%
+    summarise(total_length = sum(seg_length, na.rm = TRUE), .groups = "drop") %>%
+    group_by(cluster) %>%
+    mutate(pct = 100 * total_length / sum(total_length)) %>%
+    ungroup()
+
+  clusters <- sort(unique(df$cluster))
+  full_grid <- expand.grid(cluster = clusters, lcz = all_lcz, stringsAsFactors = FALSE)
+
+  full_grid %>%
+    left_join(df, by = c("cluster", "lcz")) %>%
+    mutate(
+      pct = ifelse(is.na(pct), 0, pct),
+      lcz_full = lcz_labels[lcz],
+      lcz_short = lcz_short_labels[lcz]
+    ) %>%
+    arrange(cluster, match(lcz, all_lcz))
+}
+
+# Faceted radar with explicit pixel sizing so panels stay square and fill their allotted space
+plot_cluster_lcz_radar_facets <- function(roads_data, colors = cluster_colors,
+                                           ncols = 2,
+                                           panel_size = 280,   # px — each polar panel is panel_size x panel_size
+                                           title_band = 40,    # px reserved above each panel for its title
+                                           gap = 100,            # px gap between panels
+                                           main_title_margin = 60,  # px reserved at top for the overall title
+                                           side_margin = 48,
+                                           bottom_margin = 20,
+                                           title = "LCZ composition by cluster") {
+  pct_df <- cluster_lcz_pct(roads_data)
+  clusters <- sort(unique(pct_df$cluster))
+  n <- length(clusters)
+  nrows <- ceiling(n / ncols)
+
+  r_max <- ceiling(max(pct_df$pct, na.rm = TRUE) / 5) * 5
+
+  # Plot-area (inside margins) dimensions, built up from panel_size so squares stay square
+  plot_area_width  <- ncols * panel_size + (ncols - 1) * gap
+  plot_area_height <- nrows * (panel_size + title_band) + (nrows - 1) * gap
+
+  fig_width  <- plot_area_width + 2 * side_margin
+  fig_height <- plot_area_height + main_title_margin + bottom_margin
+
+  fig <- plot_ly(type = 'scatterpolar', fill = 'toself')
+  polar_layouts <- list()
+  annotations <- list()
+
+  for (i in seq_along(clusters)) {
+    cl <- clusters[i]
+    row_idx <- (i - 1) %/% ncols
+    col_idx <- (i - 1) %% ncols
+
+    x0_px <- col_idx * (panel_size + gap)
+    x1_px <- x0_px + panel_size
+
+    block_top_px    <- row_idx * (panel_size + title_band + gap)
+    polar_top_px    <- block_top_px + title_band
+    polar_bottom_px <- polar_top_px + panel_size
+
+    # Fractions are relative to the plot area (same space "paper" coords use), not the full figure
+    x0 <- x0_px / plot_area_width
+    x1 <- x1_px / plot_area_width
+    y1 <- 1 - polar_top_px / plot_area_height
+    y0 <- 1 - polar_bottom_px / plot_area_height
+    title_y <- 1 - block_top_px / plot_area_height
+
+    polar_name <- if (i == 1) "polar" else paste0("polar", i)
+
+    sub <- pct_df %>% filter(cluster == cl)
+    theta_vals <- c(sub$lcz_short, sub$lcz_short[1])
+    r_vals <- c(sub$pct, sub$pct[1])
+    hover_labels <- c(sub$lcz_full, sub$lcz_full[1])
+
+    fig <- fig %>%
+      add_trace(
+        r = r_vals,
+        theta = theta_vals,
+        subplot = polar_name,
+        name = paste("Cluster", cl),
+        text = hover_labels,
+        hovertemplate = paste0("<b>Cluster ", cl, "</b><br>%{text}: %{r:.1f}%<extra></extra>"),
+        line = list(color = colors[[cl]]),
+        marker = list(color = colors[[cl]]),
+        opacity = 0.7,
+        showlegend = FALSE
+      )
+
+    polar_layouts[[polar_name]] <- list(
+      domain = list(x = c(x0, x1), y = c(y0, y1)),
+      radialaxis = list(visible = TRUE, range = c(0, r_max), ticksuffix = "%", tickfont = list(size = 8)),
+      angularaxis = list(tickfont = list(size = 8))
+    )
+
+    annotations[[i]] <- list(
+      text = paste("Cluster", cl),
+      x = (x0 + x1) / 2, y = title_y,
+      xanchor = "center", yanchor = "top",
+      xref = "paper", yref = "paper",
+      showarrow = FALSE,
+      font = list(size = 13)
+    )
+  }
+
+  layout_args <- c(
+    list(fig),
+    polar_layouts,
+    list(
+      title = title,
+      annotations = annotations,
+      width = fig_width,
+      height = fig_height,
+      margin = list(t = main_title_margin, b = bottom_margin, l = side_margin, r = side_margin)
+    )
+  )
+
+  do.call(layout, layout_args)
+}
+```
+
+```{r message=FALSE, warning=FALSE}
+plot_cluster_lcz_radar_facets(roads_data, title = "Rotterdam: LCZ composition by cluster")
+```
+
+```{r message=FALSE, warning=FALSE}
+plot_cluster_lcz_radar_facets(gzhou_roads_data, title = "Guangzhou: LCZ composition by cluster")
 ```
 
 # Discussion
