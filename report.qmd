@@ -25,7 +25,7 @@ bibliography: references.bib
 
 In the context of rapid urbanisation[@un_wup_2025] and climate change[@wmo_climate_2025], it is increasingly important to understand how cities shape their local climate.
 
-In cities, the effects of the climate change are even more severe due to the **Urban heat island (UHI) effect**[@nasa_uhi_2025] — a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
+In cities, the effects of the climate change are even more severe due to the **Urban heat island (UHI) effect**[@nasa_uhi_2025], a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
 
 However, cities are not made equal. They differ in density, land use, building materials, and the amount of green space. Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability.Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban green infrastructure contributes to temperature mitigation.
 
@@ -297,7 +297,7 @@ plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
 }
 
 # LST vs NDVI scatter with correlation coefficient, R-squared, linear trend
-# line, and a shaded prediction band — the width of the band shows how
+# line, and a shaded prediction band, the width of the band shows how
 # tightly individual streets cluster around the trend (narrow = tight fit,
 # wide = loose/scattered fit), which a bare r value alone doesn't convey
 plot_lst_ndvi_scatter <- function(data, city_name, level = 0.95) {
@@ -624,8 +624,8 @@ plot_cluster_3d(gzhou_roads_sample, title = "Street clusters in Guangzhou")
 
 First, we interpret the clusters by plotting them against the values used for clustering: NDVI, LST, and betweenness. 
 
-- **Cluster 0** has the highest LST, lowest NDVI and high betweenness — therefore, we select this cluster for further analysis. In Rotterdam, this cluster corresponds to areas in or around city centre (corresponding to LCZs of open high-, mid-, and low-rise) and some industrial areas (large low-rise). In Guangzhou, it is found in dense areas but also quite often in industrial ones — it is dominated by large low-rise LCZ. 
-- **Cluster 1** has comparable — sometimes even higher — betweenness values but is somewhat lower in LST and higher in NDVI, and is usually adjacent to cluster 0, and corresponds to similar LCZs, too. 
+- **Cluster 0** has the highest LST, lowest NDVI and high betweenness, therefore, we select this cluster for further analysis. In Rotterdam, this cluster corresponds to areas in or around city centre (corresponding to LCZs of open high-, mid-, and low-rise) and some industrial areas (large low-rise). In Guangzhou, it is found in dense areas but also quite often in industrial ones it is dominated by large low-rise LCZ. 
+- **Cluster 1** has comparable, sometimes even higher betweenness values but is somewhat lower in LST and higher in NDVI, and is usually adjacent to cluster 0, and corresponds to similar LCZs, too. 
 - **Cluster 4** has similar LST and NDVI as cluster 1 but is lower in betweenness. Streets in this cluster are typically found in low-rise neighbourhoods, and sometimes are interrupted by pockets of cluster 0 or 1. In Rotterdam, it is dominated by the open low-rise LCZ, whereas in Guangzhou, the distribution is comparable to that of cluster 1. 
 - **Cluster 3** has highest NDVI and lowest LST, but still relatively high betweenness values. On the map, this cluster often corresponds to parks. The corresponding LCZs are dense and scattered trees, as well as some open low-rise. 
 - **Cluster 5** is comparable to clusters 0, 1, and 4 in LST and NDVI but has much lower betweenness values. In Rotterdam, cluster 5 is often found on the outskirts or in (historic) port areas. In Guangzhou, however, it is often part of a highway interchange, suggesting that the clustering (or preceding calculations) are not directly transferable between the cities. Interestingly, the corresponding LCZs are extremely similar, exhibiting near identical patterns of open and large low-rise and open high-rise. 
@@ -645,7 +645,7 @@ It should be noted that the cities have somewhat different LCZ composition: Rott
 plot_city_lcz_radar(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
 ```
 
-We also note the general differences in the prevalence of the clusters: in Guangzhou, nearly a third of the street segments is part of cluster 1 compared to only 21% for Rotterdam — but the sum of cluster 0 + cluster 1 is nearly identical at 46% vs Rotterdam's 44%. Guangzhou also has a higher prevalence of clusters 2 and 5, seemingly due to lower betweenness values along certain stretches of highway and roads in the urban forest northeast of the city centre. 
+We also note the general differences in the prevalence of the clusters: in Guangzhou, nearly a third of the street segments is part of cluster 1 compared to only 21% for Rotterdam, but the sum of cluster 0 + cluster 1 is nearly identical at 46% vs Rotterdam's 44%. Guangzhou also has a higher prevalence of clusters 2 and 5, seemingly due to lower betweenness values along certain stretches of highway and roads in the urban forest northeast of the city centre. 
 
 ```{r message=FALSE, warning=FALSE}
 bar_chart <- plot_cluster_bar(
@@ -654,7 +654,7 @@ bar_chart <- plot_cluster_bar(
 bar_chart
 ```
 
-The difference between the clustering is probably best explained by the general differences between the data distribution between the 2 cities. Guangzhou has marginally lower values of betweenness — particularly the mean and Q1. More interestingly, perhaps, is that it also has both lower NDVI and lower LST. We beileve this may be due to how we carried out normalisation, only calculating the mean within the raster rather than comparing the values with the known rural areas. Lower NDVI values, we beileve, are correct, as we specifically calculate NDVI along roads, as Guangzhou appears to have much fewer roads passing through parks or fewer roads with extensive plant cover along them. 
+The difference between the clustering is probably best explained by the general differences between the data distribution between the 2 cities. Guangzhou has marginally lower values of betweenness, particularly the mean and Q1. More interestingly, perhaps, is that it also has both lower NDVI and lower LST. We beileve this may be due to how we carried out normalisation, only calculating the mean within the raster rather than comparing the values with the known rural areas. Lower NDVI values, we beileve, are correct, as we specifically calculate NDVI along roads, as Guangzhou appears to have much fewer roads passing through parks or fewer roads with extensive plant cover along them. 
 
 ```{r message=FALSE, warning=FALSE}
 plot_lst_ndvi_violin(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
@@ -684,7 +684,7 @@ plot_lst_ndvi_scatter(gzhou_roads_sample, "Guangzhou")
 
 ### Map Interpretation
 
-The maps above show the patters — or lack thereof — between different clusters in Rotterdam and Guangzhou. Particularly noteworthy is the cluster 5 — low betweennes — roundabout in Guangzhou. A lot of the streets in central Guangzhou fall into cluster 1, corresponding to medium-high LST. This may be due to the tall buildings in the area, which provide a lot of shade on the streets, whereas Rotterdam has shorter buildings and thus higher LST. 
+The maps above show the patters, or lack thereof between different clusters in Rotterdam and Guangzhou. Particularly noteworthy is the cluster 5, low betweennes - roundabout in Guangzhou. A lot of the streets in central Guangzhou fall into cluster 1, corresponding to medium-high LST. This may be due to the tall buildings in the area, which provide a lot of shade on the streets, whereas Rotterdam has shorter buildings and thus higher LST. 
 
 ## Nature-Based Solutions
 
