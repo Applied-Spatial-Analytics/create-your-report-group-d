@@ -721,17 +721,11 @@ These findings emphasise that effective nature-based solutions cannot be selecte
 ##Limitations
 
 A key limitation of this study is the reliance on Land Surface Temperature rather than direct measurements of pedestrian thermal comfort. Although LST provides valuable information regarding heat accumulation, human thermal perception is additionally influenced by air temperature, humidity, wind speed, solar radiation and shading.
-
-Furthermore, the datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty.
-
-Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
+Furthermore, the datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty. Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
 
 #Conclusion
 
 This study demonstrates that combining neighbourhood-scale and street-scale spatial analysis provides an effective framework for identifying urban heat hotspots and selecting context-sensitive nature-based solutions.
-
 Neighbourhood-scale analysis successfully identified broad thermal patterns and priority areas for further investigation. However, transferring the analysis to the street scale revealed considerably greater spatial detail, allowing individual hotspot corridors and representative urban environments to be identified. This finer spatial resolution proved essential for selecting interventions that reflect the physical characteristics of each location rather than relying solely on aggregated neighbourhood statistics.
-
 The comparison between Rotterdam and Guangzhou further demonstrated that, although urban morphology strongly influences the type of intervention required, the overall analytical workflow remains transferable across cities with different climatic and spatial characteristics. While Rotterdam's hotspot areas were predominantly located within dense residential neighbourhoods, Guangzhou's hotspots were largely associated with large transport corridors and major road infrastructure, leading to different but equally context-specific nature-based solution strategies.
-
 Overall, the study highlights that broad-scale analysis identifies where urban heat occurs, while street-scale analysis identifies where meaningful interventions can be implemented. By combining open spatial datasets with multi-scale analysis, the proposed workflow provides a practical and transferable framework for supporting evidence-based urban climate adaptation and nature-based planning.
