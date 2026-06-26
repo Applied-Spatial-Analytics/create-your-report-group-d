@@ -3,13 +3,13 @@ title: "Multi-Scale Spatial Analysis for Nature-Based Urban Heat Island Mitigati
 subtitle: "ARFW0501 – Group D Project Report"
 author:
   - name: "Artemi Kurski"
-    affiliation: "MSc Geomatics, TU Delft"
+    affiliation: "M.Sc. Geomatics, TU Delft"
   - name: "Niranjan Pradeep"
-    affiliation: "MSc Geomatics, TU Delft"
+    affiliation: "M.Sc. Geomatics, TU Delft"
   - name: "Darius Floroiu"
-    affiliation: "MSc Geomatics, TU Delft"
+    affiliation: "M.Sc. Geomatics, TU Delft"
   - name: "Henryk Gujda"
-    affiliation: "MSc Geomatics, TU Delft"
+    affiliation: "M.Sc. Geomatics, TU Delft"
 format:
   html:
     toc: true
@@ -26,6 +26,15 @@ format:
 In the context of rapid urbanisation and climate change, it is increasingly important to understand how cities shape their local climate.
 
 Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability. Cities differ in density, land use, building materials, and the amount of green space they contain. These factors strongly affect how heat is absorbed, stored, and released, which leads to noticeable temperature differences between urban areas. A key concept here is the **Urban Heat Island (UHI)** effect, where cities become warmer than their surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
+
+## Research Context
+
+UHI mitigation through blue-green infrastructure (BGI) has become an increasingly important area of research as cities adapt to climate change. Previous studies consistently demonstrate that vegetation reduces urban temperatures through shading, evapotranspiration and increased surface permeability, while simultaneously providing additional ecosystem services such as improved air quality, biodiversity and stormwater regulation. Reviews by Ji et al. (2024) and Liu and Jin (2025) identify urban green infrastructure as one of the most effective strategies for improving urban thermal resilience.
+
+The literature also highlights several methodological challenges. Many studies focus either on broad city-scale assessments using remote sensing or on detailed local simulations using tools such as CFD or ENVI-met. While satellite imagery provides efficient large-scale thermal mapping, its spatial resolution limits its application for identifying site-specific interventions. Conversely, detailed simulation approaches provide greater accuracy but require extensive computational resources and are difficult to apply at the city scale. Recent reviews therefore advocate for integrated, cross-scale approaches that combine remote sensing, spatial analysis and urban planning to bridge the gap between research and practical implementation.
+
+Building on these findings, this study proposes a multi-scale analytical workflow that combines neighbourhood-scale thermal analysis with street-level spatial assessment. By integrating Land Surface Temperature, vegetation indicators, Local Climate Zones and pedestrian accessibility, the methodology aims not only to identify urban heat hotspots but also to support the selection of context-specific nature-based solutions. Rather than proposing a universal intervention, the workflow links urban morphology with appropriate blue-green infrastructure strategies, providing a practical framework that can be transferred between Rotterdam and Guangzhou.
+
 
 Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban blue-green infrastructure contributes to temperature mitigation.
 In light of this we aim to explore the following research question:
@@ -725,9 +734,12 @@ These findings emphasise that effective nature-based solutions cannot be selecte
 A key limitation of this study is the reliance on Land Surface Temperature rather than direct measurements of pedestrian thermal comfort. Although LST provides valuable information regarding heat accumulation, human thermal perception is additionally influenced by air temperature, humidity, wind speed, solar radiation and shading.
 Furthermore, the datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty. Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
 
-# Conclusion
+# Conclusions
 
 This study demonstrates that combining neighbourhood-scale and street-scale spatial analysis provides an effective framework for identifying urban heat hotspots and selecting context-sensitive nature-based solutions.
 Neighbourhood-scale analysis successfully identified broad thermal patterns and priority areas for further investigation. However, transferring the analysis to the street scale revealed considerably greater spatial detail, allowing individual hotspot corridors and representative urban environments to be identified. This finer spatial resolution proved essential for selecting interventions that reflect the physical characteristics of each location rather than relying solely on aggregated neighbourhood statistics.
 The comparison between Rotterdam and Guangzhou further demonstrated that, although urban morphology strongly influences the type of intervention required, the overall analytical workflow remains transferable across cities with different climatic and spatial characteristics. While Rotterdam's hotspot areas were predominantly located within dense residential neighbourhoods, Guangzhou's hotspots were largely associated with large transport corridors and major road infrastructure, leading to different but equally context-specific nature-based solution strategies.
 Overall, the study highlights that broad-scale analysis identifies where urban heat occurs, while street-scale analysis identifies where meaningful interventions can be implemented. By combining open spatial datasets with multi-scale analysis, the proposed workflow provides a practical and transferable framework for supporting evidence-based urban climate adaptation and nature-based planning.
+
+
+
