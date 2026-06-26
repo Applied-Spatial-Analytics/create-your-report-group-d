@@ -23,9 +23,9 @@ bibliography: references.bib
 
 # Introduction
 
-In the context of [rapid urbanisation](https://desapublications.un.org/publications/world-urbanization-prospects-2025-summary-results) and [climate change](https://wmo.int/publication-series/state-of-global-climate/state-of-global-climate-2025), it is increasingly important to understand how cities shape their local climate.
+In the context of rapid urbanisation[@un_wup_2025] and climate change[@wmo_climate_2025], it is increasingly important to understand how cities shape their local climate.
 
-In cities, the effects of the climate change are even more severe due to the [**Urban heat island (UHI) effect**](https://science.nasa.gov/kids/earth/what-is-an-urban-heat-island/) — a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
+In cities, the effects of the climate change are even more severe due to the **Urban heat island (UHI) effect**[@nasa_uhi_2025] — a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
 
 However, cities are not made equal — they differ in density, land use, building materials, and the amount of green space. Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability.Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban green infrastructure contributes to temperature mitigation.
 
@@ -35,7 +35,7 @@ UHI mitigation through blue-green infrastructure (BGI) has become an increasingl
 
 The literature also highlights several methodological challenges. Many studies focus either on broad city-scale assessments using remote sensing or on detailed local simulations using tools such as CFD or ENVI-met. While satellite imagery provides efficient large-scale thermal mapping, its spatial resolution limits its application for identifying site-specific interventions. Conversely, detailed simulation approaches provide greater accuracy but require extensive computational resources and are difficult to apply at the city scale. Recent reviews therefore advocate for integrated, cross-scale approaches that combine remote sensing, spatial analysis and urban planning to bridge the gap between research and practical implementation.
 
-Building on these findings, this study proposes a multi-scale analytical workflow that combines neighbourhood-scale thermal analysis with street-level spatial assessment. By integrating Land Surface Temperature, vegetation indicators, Local Climate Zones and pedestrian accessibility, the methodology aims not only to identify urban heat hotspots but also to support the selection of context-specific [nature-based solutions (NBS)ht](tps://www.ilpoe.uni-stuttgart.de/files/UNaLab_Handbook.pdf) [@eisenberg_nature_based_2025]. Rather than proposing a universal intervention, the workflow links urban morphology with appropriate blue-green infrastructure strategies, providing a practical framework that can be transferred between Rotterdam and Guangzhou.
+Building on these findings, this study proposes a multi-scale analytical workflow that combines neighbourhood-scale thermal analysis with street-level spatial assessment. By integrating Land Surface Temperature, vegetation indicators, Local Climate Zones and pedestrian accessibility, the methodology aims not only to identify urban heat hotspots but also to support the selection of context-specific nature-based solutions (NBS)[@eisenberg_nature_based_2025]. Rather than proposing a universal intervention, the workflow links urban morphology with appropriate blue-green infrastructure strategies, providing a practical framework that can be transferred between Rotterdam and Guangzhou.
 
 Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban blue-green infrastructure contributes to temperature mitigation.
 
@@ -44,7 +44,7 @@ Understanding UHI highlights the direct relationship between urban design and lo
 ```
 
 ::: note-box
-**City Selection:** To answer the research question, we focus on two case study cities: Rotterdam, the Netherlands and Guangzhou, China. Both are major port cities — port of Rotterdam is [the largest port in Europe](https://www.portofrotterdam.com/en), Guangzhou port is [the largest port in the region and 5th largest in the world](https://en.gzport.com/pub/ywwzmb1/aboutGZP/GuangzhouPort/202004/t20200429_3107.html) — and both are located in river deltas. However, Guagnzhou boasts a population 26 times larger than Rotterdam. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
+**City Selection:** To answer the research question, we focus on two case study cities: Rotterdam, the Netherlands and Guangzhou, China. Both are major port cities — port of Rotterdam is the largest port in Europe[@port_of_rotterdam_2025], Guangzhou port is the largest port in the region and 5th largest in the world[@guangzhou_port_2020] — and both are located in river deltas. However, Guagnzhou boasts a population 26 times larger than Rotterdam. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
 :::
 
 ------------------------------------------------------------------------
@@ -91,7 +91,7 @@ For the streets, we select a somewhat smaller area of each city, zooming into th
 2.  Mean NDVI along the segment;
 3.  LCZ (street segments are sufficiently short so we simply pick the LCZ at the start of each segment); 4. Network Betweenness for a 1km walking radius.
 
-For Network Betweenness, we specifically use the [Place Syntax Tool](https://research.chalmers.se/en/publication/535711) implementation. It allows to predict the potential for movement along each street — in our case, using a 1km random walk.
+For Network Betweenness, we specifically use the Place Syntax Tool[@pst_documentation_2023] implementation. It allows to predict the potential for movement along each street — in our case, using a 1km random walk.
 
 ### Street Clustering
 
