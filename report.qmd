@@ -18,25 +18,24 @@ format:
     embed-resources: true
     theme: cosmo
     include-in-header: components/styles.html
+bibliography: references.bib
 ---
 
-
-# Introduction 
+# Introduction
 
 In the context of [rapid urbanisation](https://desapublications.un.org/publications/world-urbanization-prospects-2025-summary-results) and [climate change](https://wmo.int/publication-series/state-of-global-climate/state-of-global-climate-2025), it is increasingly important to understand how cities shape their local climate.
 
-In cities, the effects of the climate change are even more severe due to the [**Urban heat island (UHI) effect**](https://science.nasa.gov/kids/earth/what-is-an-urban-heat-island/) — a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution. 
+In cities, the effects of the climate change are even more severe due to the [**Urban heat island (UHI) effect**](https://science.nasa.gov/kids/earth/what-is-an-urban-heat-island/) — a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
 
-However, cities are not made equal — they differ in density, land use, building materials, and the amount of green space. Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability.Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban green infrastructure contributes to temperature mitigation. 
+However, cities are not made equal — they differ in density, land use, building materials, and the amount of green space. Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability.Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban green infrastructure contributes to temperature mitigation.
 
 ## Research Context
 
-UHI mitigation through blue-green infrastructure (BGI) has become an increasingly important area of research as cities adapt to climate change. Previous studies consistently demonstrate that vegetation reduces urban temperatures through shading, evapotranspiration and increased surface permeability, while simultaneously providing additional ecosystem services such as improved air quality, biodiversity and stormwater regulation. Reviews by Ji et al. (2024) and Liu and Jin (2025) identify urban green infrastructure as one of the most effective strategies for improving urban thermal resilience.
+UHI mitigation through blue-green infrastructure (BGI) has become an increasingly important area of research as cities adapt to climate change. Previous studies consistently demonstrate that vegetation reduces urban temperatures through shading, evapotranspiration and increased surface permeability, while simultaneously providing additional ecosystem services such as improved air quality, biodiversity and stormwater regulation. Reviews by @ji_state_of_art_2024 and @liu_how_2025 identify urban green infrastructure as one of the most effective strategies for improving urban thermal resilience.
 
 The literature also highlights several methodological challenges. Many studies focus either on broad city-scale assessments using remote sensing or on detailed local simulations using tools such as CFD or ENVI-met. While satellite imagery provides efficient large-scale thermal mapping, its spatial resolution limits its application for identifying site-specific interventions. Conversely, detailed simulation approaches provide greater accuracy but require extensive computational resources and are difficult to apply at the city scale. Recent reviews therefore advocate for integrated, cross-scale approaches that combine remote sensing, spatial analysis and urban planning to bridge the gap between research and practical implementation.
 
 Building on these findings, this study proposes a multi-scale analytical workflow that combines neighbourhood-scale thermal analysis with street-level spatial assessment. By integrating Land Surface Temperature, vegetation indicators, Local Climate Zones and pedestrian accessibility, the methodology aims not only to identify urban heat hotspots but also to support the selection of context-specific [nature-based solutions (NBS)](https://www.ilpoe.uni-stuttgart.de/files/UNaLab_Handbook.pdf). Rather than proposing a universal intervention, the workflow links urban morphology with appropriate blue-green infrastructure strategies, providing a practical framework that can be transferred between Rotterdam and Guangzhou.
-
 
 Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban blue-green infrastructure contributes to temperature mitigation.
 
@@ -44,18 +43,18 @@ Understanding UHI highlights the direct relationship between urban design and lo
 {{< include components/research-question.html >}}
 ```
 
-::: {.note-box}
-**City Selection:** 
-To answer the research question, we focus on two case study cities: Rotterdam, the Netherlands and Guangzhou, China. Both are major port cities — port of Rotterdam is [the largest port in Europe](https://www.portofrotterdam.com/en), Guangzhou port is [the largest port in the region and 5th largest in the world](https://en.gzport.com/pub/ywwzmb1/aboutGZP/GuangzhouPort/202004/t20200429_3107.html) — and both are located in river deltas. However, Guagnzhou boasts a population 26 times larger than Rotterdam. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
+::: note-box
+**City Selection:** To answer the research question, we focus on two case study cities: Rotterdam, the Netherlands and Guangzhou, China. Both are major port cities — port of Rotterdam is [the largest port in Europe](https://www.portofrotterdam.com/en), Guangzhou port is [the largest port in the region and 5th largest in the world](https://en.gzport.com/pub/ywwzmb1/aboutGZP/GuangzhouPort/202004/t20200429_3107.html) — and both are located in river deltas. However, Guagnzhou boasts a population 26 times larger than Rotterdam. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
 :::
 
----
+------------------------------------------------------------------------
 
 # Methodology
 
-Our methodology relies on a dual-scale approach to understand the urban climate. We start at macro-level (looking at administrative boundaries — Dutch *buurten* and Chinese *jiedao*) and then zoom into the micro-level street networks. We primarily rely on open global datasetss (OpenStreetMap (OSM), Landsat satellite imagery, and Local Climate Zones) to ensure transferrability between Rotterdam, Guangzhou, and other cities too. 
+Our methodology relies on a dual-scale approach to understand the urban climate. We start at macro-level (looking at administrative boundaries — Dutch *buurten* and Chinese *jiedao*) and then zoom into the micro-level street networks. We primarily rely on open global datasetss (OpenStreetMap (OSM), Landsat satellite imagery, and Local Climate Zones) to ensure transferrability between Rotterdam, Guangzhou, and other cities too.
 
 ## Workflow Overview
+
 ```{=html}
 {{< include components/pipeline-widget.html >}}
 ```
@@ -64,46 +63,35 @@ Our methodology relies on a dual-scale approach to understand the urban climate.
 
 The first step of the analysis involves identifying the required datasets and defining the spatial boundaries of the study area.
 
-For raster data, **Google Earth Engine (GEE)** is used to access and process the raster data. For vector data, we rely on Overpass API and `osmnx` python library. From these, we extract the following datasets: 
+For raster data, **Google Earth Engine (GEE)** is used to access and process the raster data. For vector data, we rely on Overpass API and `osmnx` python library. From these, we extract the following datasets:
 
-**1. Land Surface Temperature (LST):**
-LST is derived from Landsat 8 data in Google Earth Engine. Thermal bands are processed to obtain surface temperature, which was then used to study spatial heat variations across Rotterdam. 
-::: {.callout-note }
-An issue with using Landsat-derived LST is the cloud coverage and stiching across several dates, which result in large jumps in temperature and anomalous cold/hot patches. To mitigate this, we normalise the dataset, subtracting the mean LST for each date from each raster cell prior to stiching. 
-:::
+**1. Land Surface Temperature (LST):** LST is derived from Landsat 8 data in Google Earth Engine. Thermal bands are processed to obtain surface temperature, which was then used to study spatial heat variations across Rotterdam. ::: {.callout-note } An issue with using Landsat-derived LST is the cloud coverage and stiching across several dates, which result in large jumps in temperature and anomalous cold/hot patches. To mitigate this, we normalise the dataset, subtracting the mean LST for each date from each raster cell prior to stiching. :::
 
-**2. NDVI:**
-Vegetation cover was computed from Landsat 8 data in Google Earth Engine using the Normalized Difference Vegetation Index (NDVI), providing a measure of the extent of urban green infrastructure. 
+**2. NDVI:** Vegetation cover was computed from Landsat 8 data in Google Earth Engine using the Normalized Difference Vegetation Index (NDVI), providing a measure of the extent of urban green infrastructure.
 
-**3. Local Climate Zones (LCZ):**
-Urban form classification was obtained using the RUBCLIM LCZ dataset available in Google Earth Engine, which categorises urban areas based on built type and land cover characteristics.
+**3. Local Climate Zones (LCZ):** Urban form classification was obtained using the RUBCLIM LCZ dataset available in Google Earth Engine, which categorises urban areas based on built type and land cover characteristics.
 
-**4. Administrative boundaries:**
-Municipal and neighbourhood boundaries for Rotterdam were taken from the `CBS Wijken en Buurten 2025`, used to define the spatial extent of the study area. For Guangzhou, the municipal boundaries were extracted from OpenStreetMap. 
+**4. Administrative boundaries:** Municipal and neighbourhood boundaries for Rotterdam were taken from the `CBS Wijken en Buurten 2025`, used to define the spatial extent of the study area. For Guangzhou, the municipal boundaries were extracted from OpenStreetMap.
 
-**5. Street network:**
-The pedestrian street network was extracted from OpenStreetMap using the `osmnx` library.
+**5. Street network:** The pedestrian street network was extracted from OpenStreetMap using the `osmnx` library.
 
 ## Data Processing
 
 ### Neighbourhood-Scale Data Processing
 
-For the neighbourhoods, we aggregate the data using zonal statistics. Specifically, we calculate: 
-1. Mean LST; 
-2. Mean NDVI; 
-3. Dominant LCZ, since LCZ is _nominal_, not numeric data. 
+For the neighbourhoods, we aggregate the data using zonal statistics. Specifically, we calculate: 1. Mean LST; 2. Mean NDVI; 3. Dominant LCZ, since LCZ is *nominal*, not numeric data.
 
-This allows us to identify broad trends across the neighbourhoods, and somewhat narrow the scope of the street network processing — which is otherwise computationally expensive. We do not cluster the neighbourhoods or perform neighbourhood-scale analysis, as we find that the data is too coarse to be meaningful. 
+This allows us to identify broad trends across the neighbourhoods, and somewhat narrow the scope of the street network processing — which is otherwise computationally expensive. We do not cluster the neighbourhoods or perform neighbourhood-scale analysis, as we find that the data is too coarse to be meaningful.
 
-### Street-Scale Data Processing. 
+### Street-Scale Data Processing.
 
-For the streets, we select a somewhat smaller area of each city, zooming into their city centres. We first split streets into street segments to allow for even finer resolution of analysis. For the street network, we calculate: 
+For the streets, we select a somewhat smaller area of each city, zooming into their city centres. We first split streets into street segments to allow for even finer resolution of analysis. For the street network, we calculate:
 
-1. Mean LST along the segment; 
-2. Mean NDVI along the segment; 
-3. LCZ (street segments are sufficiently short so we simply pick the LCZ at the start of each segment); 4. Network Betweenness for a 1km walking radius. 
+1.  Mean LST along the segment;
+2.  Mean NDVI along the segment;
+3.  LCZ (street segments are sufficiently short so we simply pick the LCZ at the start of each segment); 4. Network Betweenness for a 1km walking radius.
 
-For Network Betweenness, we specifically use the [Place Syntax Tool](https://research.chalmers.se/en/publication/535711) implementation. It allows to predict the potential for movement along each street — in our case, using a 1km random walk. 
+For Network Betweenness, we specifically use the [Place Syntax Tool](https://research.chalmers.se/en/publication/535711) implementation. It allows to predict the potential for movement along each street — in our case, using a 1km random walk.
 
 ### Street Clustering
 
@@ -113,11 +101,11 @@ First, we graph the elbow plot for Rotterdam, which helped us identify that `k =
 
 ## Qualitative Analysis
 
-After the streets have been clustered, we perform the qualitative assessment. For this, we select a neighbourhood with high concentration streets corresponding to the cluster with highest potential, and look at SVI to identify the street morphology and suitable NBS for each street type. 
+After the streets have been clustered, we perform the qualitative assessment. For this, we select a neighbourhood with high concentration streets corresponding to the cluster with highest potential, and look at SVI to identify the street morphology and suitable NBS for each street type.
 
-# Neighbourhood-Scale Results. 
+# Neighbourhood-Scale Results.
 
-## Rotterdam 
+## Rotterdam
 
 ```{=html}
 {{< include components/rotterdam-maps.html >}}
@@ -131,13 +119,13 @@ After the streets have been clustered, we perform the qualitative assessment. Fo
 
 ## Qualitative Comparison
 
-Both cities follow somewhat similar distribution of neighbourhoods. More central areas have higher LST and lower NDVI values, and represent high- and mid-rise LCZs, whereas the neighbourhoods on the periphery are cooler, greener, and less dense. Based on this, we selected the area for street analysis, which excludes less central neighbourhoods.  
+Both cities follow somewhat similar distribution of neighbourhoods. More central areas have higher LST and lower NDVI values, and represent high- and mid-rise LCZs, whereas the neighbourhoods on the periphery are cooler, greener, and less dense. Based on this, we selected the area for street analysis, which excludes less central neighbourhoods.
 
 # Street-Scale Results
 
-## Rotterdam 
+## Rotterdam
 
-## Guangzhou 
+## Guangzhou
 
 ## Qualitative Comparison
 
@@ -193,26 +181,19 @@ cluster3d_scaled <- plot_ly(
 cluster3d_scaled
 ```
 
-
 ## Small-scale output: Rotterdam
 
 From the analysis, three neighbourhoods stand out as showing extreme variation relative to the rest of the city: **Bloemhof, Afrikaanderwijk, and Hillesluis**.
+
 ```{=html}
 {{< include components/rotterdam-cluster-maps.html >}}
 ```
 
-
-
-
-
-
 ## Small-scale output: Guangzhou
-
 
 ```{=html}
 {{< include components/yuexiu-district-china.html >}}
 ```
-
 
 # Results
 
@@ -227,7 +208,6 @@ From the analysis, three neighbourhoods stand out as showing extreme variation r
 ```{=html}
 {{< include components/yuexiu-street-view.html >}}
 ```
-
 
 ```{r message=FALSE, warning=FALSE}
 library(sf)
@@ -777,6 +757,7 @@ bar_chart
 ```
 
 # Discussion
+
 ## Interpretation of the findings
 
 The results demonstrate that urban heat island patterns can be identified effectively through a combination of remotely sensed environmental indicators and street-level spatial analysis. At the neighbourhood scale, the analysis of Land Surface Temperature (LST), Normalized Difference Vegetation Index (NDVI), and Local Climate Zones (LCZ) successfully identified broad spatial patterns of urban heat. Industrial districts and densely built urban areas generally exhibited higher surface temperatures and lower vegetation cover, while greener neighbourhoods consistently showed lower thermal intensity. These findings are consistent with established urban climate research, which identifies vegetation as an important contributor to surface cooling through shading and evapotranspiration.
@@ -811,8 +792,7 @@ These findings emphasise that effective nature-based solutions cannot be selecte
 
 ## Limitations
 
-A key limitation of this study is the reliance on Land Surface Temperature rather than direct measurements of pedestrian thermal comfort. Although LST provides valuable information regarding heat accumulation, human thermal perception is additionally influenced by air temperature, humidity, wind speed, solar radiation and shading.
-Furthermore, the datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty. Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
+A key limitation of this study is the reliance on Land Surface Temperature rather than direct measurements of pedestrian thermal comfort. Although LST provides valuable information regarding heat accumulation, human thermal perception is additionally influenced by air temperature, humidity, wind speed, solar radiation and shading. Furthermore, the datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty. Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
 
 # Conclusions
 
@@ -820,8 +800,6 @@ This study demonstrates that combining neighbourhood-scale and street-scale spat
 
 Neighbourhood-scale analysis successfully identifies broad thermal patterns and priority areas for further investigation. However, transferring the analysis to the street scale reveals considerably greater spatial detail, allowing identification of individual hotspot corridors and representative urban environments. This finer spatial resolution proved essential for selecting interventions that reflect the physical characteristics of each location rather than relying solely on aggregated neighbourhood statistics.
 
-The comparison between Rotterdam and Guangzhou further demonstrated that, although urban morphology strongly influences the type of intervention required, the overall analytical workflow remains transferable across cities with different climatic and spatial characteristics. While Rotterdam's hotspot areas were predominantly located within dense residential neighbourhoods, Guangzhou's hotspots were largely associated with large transport corridors and major road infrastructure, leading to different but equally context-specific nature-based solution strategies.
-Overall, the study highlights that broad-scale analysis identifies where urban heat occurs, while street-scale analysis identifies where meaningful interventions can be implemented. By combining open spatial datasets with multi-scale analysis, the proposed workflow provides a practical and transferable framework for supporting evidence-based urban climate adaptation and nature-based planning.
+The comparison between Rotterdam and Guangzhou further demonstrated that, although urban morphology strongly influences the type of intervention required, the overall analytical workflow remains transferable across cities with different climatic and spatial characteristics. While Rotterdam's hotspot areas were predominantly located within dense residential neighbourhoods, Guangzhou's hotspots were largely associated with large transport corridors and major road infrastructure, leading to different but equally context-specific nature-based solution strategies. Overall, the study highlights that broad-scale analysis identifies where urban heat occurs, while street-scale analysis identifies where meaningful interventions can be implemented. By combining open spatial datasets with multi-scale analysis, the proposed workflow provides a practical and transferable framework for supporting evidence-based urban climate adaptation and nature-based planning.
 
-
-
+# References
