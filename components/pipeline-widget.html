@@ -1,0 +1,73 @@
+<div class="widget-shell">
+    <h4>Pipeline overview</h4>
+
+    <div class="workflow-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+            <strong>Extract data</strong> — Raster (LCZ, LST, NDVI) and vector
+            data (administrative units, roads) are extracted.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+            <strong>Preproces raster data</strong> — Land Surface Temperature is
+            normalised to enable consistent comparison across neighbourhoods and
+            time periods.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+            <strong>Process vector data</strong> — At the neighbourhood level,
+            mean LST, mean NDVI, and the dominant LCZ class were computed.
+            Network betweenness, LST, NDVI, and LCZ were calculated for each
+            road segment.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+            <strong>Identify hot neighbourhoods</strong> — Neighbourhoods
+            showing distinctly high LST are identified as thermal hotspots for
+            further analysis.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+            <strong>Street-segment clustering</strong> — Road segments are
+            grouped into clusters using K-Means based on NDVI, LST, and
+            betweenness.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+            <strong>Describe clusters</strong> — Clusters are characterised
+            through Google Street View imagery (SVI) to verify thermal and land
+            cover conditions on the ground.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+            <strong>Propose nature-based solutions</strong> — Nature-based
+            solutions for cooling are proposed based on the SVI.
+        </div>
+    </div>
+
+    <div class="workflow-step">
+        <div class="step-num">8</div>
+        <div class="step-body">
+            <strong>Compare the cities</strong> — Carry out comparison of LCZ,
+            PST, and mean NDVI between the two cities.
+        </div>
+    </div>
+</div>

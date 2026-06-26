@@ -1,65 +1,789 @@
 ---
-title: "Title of your report"
-subtitle: "Project report of Group #"
+title: "Multi-Scale Spatial Analysis for Nature-Based Urban Heat Island Mitigation"
+subtitle: "ARFW0501 – Group D Project Report"
 author:
-  - name: "Student 1"
-    affiliation: "MSc Geomatics"
-  - name: "Student 2"
-    affiliation: "MSc Landscape Architecture"
-  - name: "Student 3"
-    affiliation: "MSc Urbanism"
-  - name: "Student 4"
-    affiliation: "MSc Urbanism"
-  - name: "Student 5"
-    affiliation: "MSc Landscape Architecture"
-format: html
+  - name: "Artemi Kurski"
+    affiliation: "M.Sc. Geomatics, TU Delft"
+  - name: "Niranjan Pradeep"
+    affiliation: "M.Sc. Geomatics, TU Delft"
+  - name: "Darius Floroiu"
+    affiliation: "M.Sc. Geomatics, TU Delft"
+  - name: "Henryk Gujda"
+    affiliation: "M.Sc. Geomatics, TU Delft"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    embed-resources: true
+    theme: cosmo
+    include-in-header: components/styles.html
+bibliography: references.bib
 ---
 
-::: callout
-## This is a computational notebook
+# Introduction
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+In the context of rapid urbanisation[@un_wup_2025] and climate change[@wmo_climate_2025], it is increasingly important to understand how cities shape their local climate.
 
-## Running Code
+In cities, the effects of the climate change are even more severe due to the **Urban heat island (UHI) effect**[@nasa_uhi_2025], a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+However, cities are not made equal. They differ in density, land use, building materials, and the amount of green space. Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability.Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban green infrastructure contributes to temperature mitigation.
 
-```{r}
-1 + 1
+## Research Context
+
+UHI mitigation through Blue-Green Infrastructure (BGI) has become an increasingly important area of research as cities adapt to climate change. Previous studies consistently demonstrate that vegetation reduces urban temperatures through shading, evapotranspiration and increased surface permeability, while simultaneously providing additional ecosystem services such as improved air quality, biodiversity and stormwater regulation. Reviews by @ji_state_of_art_2024 and @liu_how_2025 identify urban green infrastructure as one of the most effective strategies for improving urban thermal resilience.
+
+The literature also highlights several methodological challenges. Many studies focus either on broad city-scale assessments using remote sensing or on detailed local simulations using methods such as Computational Fluid Dynamics (CFD), ENVI-met, OpenFOAM. While satellite imagery provides efficient large-scale thermal mapping, its spatial resolution limits its application for identifying site-specific interventions. Conversely, detailed simulation approaches provide greater accuracy but require extensive computational resources and are difficult to apply at the city scale. Recent reviews therefore advocate for integrated, cross-scale approaches that combine remote sensing, spatial analysis and urban planning to bridge the gap between research and practical implementation.
+
+Building on these findings, this study proposes a multi-scale analytical workflow that combines neighbourhood-scale thermal analysis with street-level spatial assessment. By integrating Land Surface Temperature, vegetation indicators, Local Climate Zones and pedestrian accessibility, the methodology aims not only to identify urban heat hotspots but also to support the selection of context-specific Nature-Based Solutions (NBS)[@eisenberg_nature_based_2025]. Rather than proposing a universal intervention, the workflow links urban morphology with appropriate blue-green infrastructure strategies, providing a practical framework that can be transferred between Rotterdam and Guangzhou.
+
+Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban blue-green infrastructure contributes to temperature mitigation.
+
+```{=html}
+{{< include components/research-question.html >}}
 ```
 
-You can add options to executable code like this 
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
-
-You can delete this entire callout between and including the lines
-```
-::: callout
-```
-and
-
-```
-:::
-```
-and start the report from the Introduction section below.
+::: note-box
+**City Selection:** To answer the research question, we focus on two case study cities: Rotterdam, the Netherlands and Guangzhou, China. Both are major port cities; port of Rotterdam is the largest port in Europe[@port_of_rotterdam_2025], Guangzhou port is the largest port in the region and 5th largest in the world[@guangzhou_port_2020], and both are located in river deltas. However, Guagnzhou boasts a population 26 times larger than Rotterdam. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
 :::
 
-## Introduction
+------------------------------------------------------------------------
 
-## Methods
+# Methodology
 
-### MCDA
+Our methodology relies on a dual-scale approach to understand the urban climate. We start at macro-level (looking at administrative boundaries, Dutch *buurten* and Chinese *jiedao*) and then zoom into the micro-level street networks. We primarily rely on open global datasets (OpenStreetMap (OSM), Landsat Satellite Imagery (LST), and Local Climate Zones(LCZ)) to ensure transferrability between Rotterdam, Guangzhou, and other cities too.
 
-### Typology construction
+## Workflow Overview
 
-## Results
+```{=html}
+{{< include components/pipeline-widget.html >}}
+```
 
-## Discussion
+## Data Acquisition
 
-## Conclusion
+The first step of the analysis involves identifying the required datasets and defining the spatial boundaries of the study area.
 
+For raster data, **Google Earth Engine (GEE)** is used to access and process the raster data. For vector data, we rely on Overpass API and `osmnx` python library. From these, we extract the following datasets:
+
+**1. Land Surface Temperature (LST):** LST is derived from Landsat 8 data in Google Earth Engine. Thermal bands are processed to obtain surface temperature, which was then used to study spatial heat variations across Rotterdam. 
+
+:::{.callout-note} 
+An issue with using Landsat-derived LST is the cloud coverage and stiching across several dates, which result in large jumps in temperature and anomalous cold/hot patches. To mitigate this, we normalise the dataset, subtracting the mean LST for each date from each raster cell prior to stiching. 
+:::
+
+
+**2. Normalized Difference Vegetation Index (NDVI):** Vegetation cover was computed from Landsat 8 data in Google Earth Engine using the NDVI, providing a measure of the extent of urban green infrastructure.
+
+**3. Local Climate Zones (LCZ):** Urban form classification was obtained using the RUBCLIM LCZ dataset available in Google Earth Engine, which categorises urban areas based on built type and land cover characteristics.
+
+**4. Administrative boundaries:** Municipal and neighbourhood boundaries for Rotterdam were taken from the `CBS Wijken en Buurten 2025`, used to define the spatial extent of the study area. For Guangzhou, the municipal boundaries were extracted from OpenStreetMap.
+
+**5. Street network:** The pedestrian street network was extracted from OpenStreetMap using the `osmnx` library.
+
+## Data Processing
+
+### Neighbourhood-Scale Data Processing
+
+For the neighbourhoods, we aggregate the data using zonal statistics. Specifically, we calculate: 1. Mean LST; 2. Mean NDVI; 3. Dominant LCZ, since LCZ is *nominal*, not numeric data.
+
+This allows us to identify broad trends across the neighbourhoods, and somewhat narrow the scope of the street network processing, which is otherwise computationally expensive. We do not cluster the neighbourhoods or perform neighbourhood-scale analysis, as we find that the data is too coarse to be meaningful.
+
+### Street-Scale Data Processing.
+
+For the streets, we select a somewhat smaller area of each city, zooming into their city centres. We first split streets into street segments to allow for even finer resolution of analysis. For the street network, we calculate:
+
+1.  Mean LST along the segment;
+2.  Mean NDVI along the segment;
+3.  LCZ (street segments are sufficiently short so we simply pick the LCZ at the start of each segment); 
+4. Network Betweenness for a 1km walking radius.
+
+For Network Betweenness, we specifically use the Place Syntax Tool[@pst_documentation_2023] implementation. It allows to predict the potential for movement along each street, in our case, using a 1km random walk.
+
+### Street Clustering
+
+After computing the metrics, we perform k-means clustering of the streets based on LST, NDVI, and network betweenness, with the aim of identifying the hottest streets with lowest amount of vegetation and highest potential for movement, which will form a cluster with highest potential for intervention.
+
+First, we graph the elbow plot for Rotterdam, which helped us identify that `k = 6` is most aproppriate for Rotterdam. We then train the clustering on Rotterdam data and use it to cluster Guangzhou streets to ensure the clusters are comparable along the cities.
+
+## Qualitative Analysis
+
+After the streets have been clustered, we perform the qualitative assessment. For this, we select a neighbourhood with high concentration streets corresponding to the cluster with highest potential, and look at SVI to identify the street morphology and suitable NBS for each street type.
+
+```{r message=FALSE, warning=FALSE}
+#| label: setup-data-and-functions
+
+library(sf)
+library(dplyr)
+library(plotly)
+
+# ============================================================
+# DATA EXTRACTION (run once, reused by every function call below)
+# ============================================================
+
+# Rotterdam street network with cluster assignments
+invisible(capture.output(
+  roads_data <- st_read("data/rotterdam/rotterdam_roads_clustered.gpkg",
+                        layer = "rotterdam_roads_data")
+))
+
+# Guangzhou street network with cluster assignments
+invisible(capture.output(
+  gzhou_roads_data <- st_read("data/guangzhou/guangzhou_roads_clustered.gpkg",
+                        layer = "guangzhou_roads_data")
+))
+
+# Random sample of 1000 streets per city, used for scatter/3D plots
+set.seed(42)  # remove or change this if you don't want reproducible sampling
+roads_sample       <- roads_data %>% slice_sample(n = 1000)
+gzhou_roads_sample <- gzhou_roads_data %>% slice_sample(n = 1000)
+
+# ============================================================
+# SHARED LOOKUP TABLES
+# ============================================================
+
+# Colors for clusters 0-5
+cluster_colors <- c(
+  "0" = "#4C72B0",
+  "1" = "#65C3A1",
+  "2" = "#FC9964",
+  "3" = "#869DC5",
+  "4" = "#E597C0",
+  "5" = "#D9C04C"
+)
+
+# LCZ category labels
+lcz_labels <- c(
+  "0"  = "No data",
+  "1"  = "Compact highrise",
+  "2"  = "Compact midrise",
+  "3"  = "Compact lowrise",
+  "4"  = "Open highrise",
+  "5"  = "Open midrise",
+  "6"  = "Open lowrise",
+  "7"  = "Lightweight lowrise",
+  "8"  = "Large lowrise",
+  "9"  = "Sparsely built",
+  "10" = "Heavy industry",
+  "11" = "Dense trees (LCZ A)",
+  "12" = "Scattered trees (LCZ B)",
+  "13" = "Bush, scrub (LCZ C)",
+  "14" = "Low plants (LCZ D)",
+  "15" = "Bare rock/paved (LCZ E)",
+  "16" = "Bare soil/sand (LCZ F)",
+  "17" = "Water (LCZ G)"
+)
+lcz_short_labels <- c("0" = "no data", setNames(paste("LCZ", 1:17), as.character(1:17)))
+
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
+
+# Convert a hex color (e.g. "#4C72B0") to an rgba() string with a given alpha
+hex_to_rgba <- function(hex, alpha) {
+  rgb_vals <- col2rgb(hex)
+  sprintf("rgba(%d,%d,%d,%.2f)", rgb_vals[1], rgb_vals[2], rgb_vals[3], alpha)
+}
+
+# ============================================================
+# PLOTTING FUNCTIONS
+# ============================================================
+
+# 3D scatter of LST x NDVI x Betweenness, colored by cluster
+plot_cluster_3d <- function(data, title) {
+  plot_ly(
+    x = data$lst,
+    y = data$ndvi,
+    z = data$Bww1kM,
+    type = "scatter3d",
+    mode = "markers",
+    color = as.factor(data$cluster),
+    colors = cluster_colors,
+    marker = list(size = 3)
+  ) %>%
+    layout(
+      title = title,
+      scene = list(
+        xaxis = list(title = "LST"),
+        yaxis = list(title = "NDVI"),
+        zaxis = list(title = "Betweenness")
+      )
+    )
+}
+
+# Draws a violin SHAPE from a precomputed density curve (n points) instead of
+# letting plotly's type="violin" embed every raw row to recompute the KDE
+# client-side. This is what actually kills the file-size blow-up: regardless
+# of whether `x` has 500 or 350,000 values, density() always returns `n`
+# points, so the embedded JSON payload stays tiny and constant-size.
+add_violin_from_density <- function(p, x, center, color, name,
+                                     half_width = 0.35, n = 256,
+                                     line_opacity = 0.8, fill_opacity = 0.4,
+                                     showlegend = TRUE) {
+  x <- x[is.finite(x)]
+  d <- density(x, n = n)                      # ~256 (x,y) pairs, not 1 per row
+
+  scale <- half_width / max(d$y)               # normalize to a fixed max width
+  half  <- d$y * scale
+
+  # closed polygon: left edge going up the value range, right edge coming back down
+  poly_x <- c(center - half, rev(center + half))
+  poly_y <- c(d$x,           rev(d$x))
+
+  p %>% add_trace(
+    type = "scatter", mode = "lines",
+    x = poly_x, y = poly_y,
+    fill = "toself",
+    fillcolor = hex_to_rgba(color, fill_opacity),
+    line = list(color = hex_to_rgba(color, line_opacity)),
+    name = name, legendgroup = name, showlegend = showlegend,
+    hoverinfo = "skip"
+  )
+}
+
+# Box + mean line drawn from a 5-number summary, not the raw vector. plotly's
+# box trace supports precomputed q1/median/q3/lowerfence/upperfence/mean
+# directly, so this needs only ~6 numbers per group.
+add_box_summary <- function(p, x, center, color, name, box_width = 0.12) {
+  x  <- x[is.finite(x)]
+  qs <- quantile(x, probs = c(0, 0.25, 0.5, 0.75, 1), names = FALSE)
+
+  p %>% add_trace(
+    type = "box",
+    x0 = center, width = box_width,
+    q1 = list(qs[2]), median = list(qs[3]), q3 = list(qs[4]),
+    lowerfence = list(qs[1]), upperfence = list(qs[5]),
+    mean = list(mean(x)), boxmean = TRUE,
+    fillcolor = "white",
+    line = list(color = color, width = 1),
+    name = name, legendgroup = name, showlegend = FALSE,
+    hoverinfo = "skip"
+  )
+}
+
+# Violin plots for LST, NDVI, and betweenness (Bww1kM), one subplot per
+# variable, one violin per city within each
+# data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
+plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
+                                  title = "Distribution of LST, NDVI, and Betweenness by city") {
+
+  # Build one violin subplot for a given variable (e.g. "lst", "ndvi", "Bww1kM")
+  build_panel <- function(var, y_title, show_legend) {
+    p <- plot_ly()
+    for (i in seq_along(data_list)) {
+      city_name <- names(data_list)[i]
+      x <- data_list[[city_name]] %>% st_drop_geometry() %>% pull(.data[[var]])
+
+      p <- p %>%
+        add_violin_from_density(x, center = i, color = colors[i], name = city_name,
+                                 showlegend = show_legend) %>%
+        add_box_summary(x, center = i, color = colors[i], name = city_name)
+    }
+    p %>% layout(
+      yaxis = list(title = y_title),
+      xaxis = list(title = "", tickvals = seq_along(data_list),
+                   ticktext = names(data_list), range = c(0.5, length(data_list) + 0.5))
+    )
+  }
+
+  p_lst  <- build_panel("lst",    "LST",         show_legend = TRUE)
+  p_ndvi <- build_panel("ndvi",   "NDVI",        show_legend = FALSE)
+  p_bw   <- build_panel("Bww1kM", "Betweenness", show_legend = FALSE)
+
+  subplot(p_lst, p_ndvi, p_bw, nrows = 1, titleY = TRUE, margin = 0.06) %>%
+    layout(
+      title = title,
+      legend = list(title = list(text = "City"))
+    )
+}
+
+# LST vs NDVI scatter with correlation coefficient, R-squared, linear trend
+# line, and a shaded prediction band, the width of the band shows how
+# tightly individual streets cluster around the trend (narrow = tight fit,
+# wide = loose/scattered fit), which a bare r value alone doesn't convey
+plot_lst_ndvi_scatter <- function(data, city_name, level = 0.95) {
+  correlation <- cor(data$lst, data$ndvi, use = "complete.obs")
+  r_squared   <- correlation^2
+
+  lm_fit <- lm(ndvi ~ lst, data = data)
+  lst_range <- seq(min(data$lst, na.rm = TRUE),
+                    max(data$lst, na.rm = TRUE),
+                    length.out = 100)
+
+  # interval = "prediction" captures the spread of individual observations
+  # around the line (i.e. tightness of the cloud of points), as opposed to
+  # interval = "confidence" which only captures uncertainty in the mean line
+  pred <- predict(lm_fit, newdata = data.frame(lst = lst_range),
+                   interval = "prediction", level = level)
+  trend_pred <- pred[, "fit"]
+  pred_lwr   <- pred[, "lwr"]
+  pred_upr   <- pred[, "upr"]
+
+  plot_ly() %>%
+    add_trace(
+      x = c(lst_range, rev(lst_range)),
+      y = c(pred_upr, rev(pred_lwr)),
+      type = "scatter",
+      mode = "lines",
+      fill = "toself",
+      fillcolor = hex_to_rgba("#000000", 0.08),
+      line = list(color = "transparent"),
+      name = paste0(round(level * 100), "% prediction band"),
+      hoverinfo = "skip"
+    ) %>%
+    add_trace(
+      data = data,
+      x = ~lst,
+      y = ~ndvi,
+      type = "scatter",
+      mode = "markers",
+      color = ~as.factor(cluster),
+      colors = cluster_colors,
+      marker = list(size = 6, opacity = 0.7),
+      name = ~as.factor(cluster),
+      inherit = FALSE
+    ) %>%
+    add_trace(
+      x = lst_range,
+      y = trend_pred,
+      type = "scatter",
+      mode = "lines",
+      line = list(color = "#000000", width = 2, dash = "dash"),
+      name = "Trend line",
+      inherit = FALSE   # <-- prevents it from inheriting the marker settings above
+    ) %>%
+    layout(
+      title = paste0(city_name, ": LST vs NDVI (r = ", round(correlation, 3),
+                      ", R\u00b2 = ", round(r_squared, 3), ")"),
+      xaxis = list(title = "LST"),
+      yaxis = list(title = "NDVI")
+    )
+}
+
+# % of a city's TOTAL road length per LCZ (no cluster grouping)
+city_lcz_pct <- function(roads_data, all_lcz = names(lcz_labels)) {
+  roads_data$seg_length <- as.numeric(st_length(roads_data))
+
+  df <- roads_data %>%
+    st_drop_geometry() %>%
+    mutate(lcz = ifelse(is.na(lcz), "0", as.character(lcz))) %>%
+    group_by(lcz) %>%
+    summarise(total_length = sum(seg_length, na.rm = TRUE), .groups = "drop") %>%
+    mutate(pct = 100 * total_length / sum(total_length))
+
+  tibble(lcz = all_lcz) %>%
+    left_join(df, by = "lcz") %>%
+    mutate(
+      pct = ifelse(is.na(pct), 0, pct),
+      lcz_full = lcz_labels[lcz],
+      lcz_short = lcz_short_labels[lcz]
+    ) %>%
+    arrange(match(lcz, all_lcz))
+}
+
+plot_city_lcz_radar <- function(data_list, colors = c("#4C72B0", "#FC9964"),
+                                 line_opacity = 0.6, fill_opacity = 0.1,
+                                 title = "LCZ composition of total road network length",
+                                 title_pad = 16) {
+  fig <- plot_ly(type = 'scatterpolar', fill = 'toself')
+
+  for (i in seq_along(data_list)) {
+    city_name <- names(data_list)[i]
+    pct_df <- city_lcz_pct(data_list[[i]])
+
+    theta_vals <- c(pct_df$lcz_short, pct_df$lcz_short[1])
+    r_vals <- c(pct_df$pct, pct_df$pct[1])
+    hover_labels <- c(pct_df$lcz_full, pct_df$lcz_full[1])
+
+    fig <- fig %>%
+      add_trace(
+        r = r_vals,
+        theta = theta_vals,
+        name = city_name,
+        text = hover_labels,
+        hovertemplate = paste0("<b>", city_name, "</b><br>%{text}: %{r:.1f}%<extra></extra>"),
+        line = list(color = hex_to_rgba(colors[i], line_opacity)),
+        marker = list(color = hex_to_rgba(colors[i], line_opacity)),
+        fillcolor = hex_to_rgba(colors[i], fill_opacity)
+        # no trace-level `opacity` — line/marker and fill now control their own alpha independently
+      )
+  }
+
+  fig %>%
+    layout(
+      polar = list(
+        domain = list(y = c(0, 0.88)),
+        radialaxis = list(visible = TRUE, ticksuffix = "%")
+      ),
+      title = list(text = title, y = 0.97, yanchor = "top"),
+      margin = list(t = title_pad)
+    )
+}
+
+cluster_lcz_pct <- function(roads_data, all_lcz = names(lcz_labels)) {
+  roads_data$seg_length <- as.numeric(st_length(roads_data))
+
+  df <- roads_data %>%
+    st_drop_geometry() %>%
+    mutate(
+      cluster = as.character(cluster),
+      lcz = ifelse(is.na(lcz), "0", as.character(lcz))
+    ) %>%
+    group_by(cluster, lcz) %>%
+    summarise(total_length = sum(seg_length, na.rm = TRUE), .groups = "drop") %>%
+    group_by(cluster) %>%
+    mutate(pct = 100 * total_length / sum(total_length)) %>%
+    ungroup()
+
+  clusters <- sort(unique(df$cluster))
+  full_grid <- expand.grid(cluster = clusters, lcz = all_lcz, stringsAsFactors = FALSE)
+
+  full_grid %>%
+    left_join(df, by = c("cluster", "lcz")) %>%
+    mutate(
+      pct = ifelse(is.na(pct), 0, pct),
+      lcz_full = lcz_labels[lcz],
+      lcz_short = lcz_short_labels[lcz]
+    ) %>%
+    arrange(cluster, match(lcz, all_lcz))
+}
+
+# Faceted radar with explicit pixel sizing so panels stay square and fill their allotted space
+plot_cluster_lcz_radar_facets <- function(roads_data, colors = cluster_colors,
+                                           ncols = 2,
+                                           panel_size = 280,   # px — each polar panel is panel_size x panel_size
+                                           title_band = 40,    # px reserved above each panel for its title
+                                           gap = 100,            # px gap between panels
+                                           main_title_margin = 60,  # px reserved at top for the overall title
+                                           side_margin = 48,
+                                           bottom_margin = 20,
+                                           title = "LCZ composition by cluster") {
+  pct_df <- cluster_lcz_pct(roads_data)
+  clusters <- sort(unique(pct_df$cluster))
+  n <- length(clusters)
+  nrows <- ceiling(n / ncols)
+
+  r_max <- ceiling(max(pct_df$pct, na.rm = TRUE) / 5) * 5
+
+  # Plot-area (inside margins) dimensions, built up from panel_size so squares stay square
+  plot_area_width  <- ncols * panel_size + (ncols - 1) * gap
+  plot_area_height <- nrows * (panel_size + title_band) + (nrows - 1) * gap
+
+  fig_width  <- plot_area_width + 2 * side_margin
+  fig_height <- plot_area_height + main_title_margin + bottom_margin
+
+  fig <- plot_ly(type = 'scatterpolar', fill = 'toself')
+  polar_layouts <- list()
+  annotations <- list()
+
+  for (i in seq_along(clusters)) {
+    cl <- clusters[i]
+    row_idx <- (i - 1) %/% ncols
+    col_idx <- (i - 1) %% ncols
+
+    x0_px <- col_idx * (panel_size + gap)
+    x1_px <- x0_px + panel_size
+
+    block_top_px    <- row_idx * (panel_size + title_band + gap)
+    polar_top_px    <- block_top_px + title_band
+    polar_bottom_px <- polar_top_px + panel_size
+
+    # Fractions are relative to the plot area (same space "paper" coords use), not the full figure
+    x0 <- x0_px / plot_area_width
+    x1 <- x1_px / plot_area_width
+    y1 <- 1 - polar_top_px / plot_area_height
+    y0 <- 1 - polar_bottom_px / plot_area_height
+    title_y <- 1 - block_top_px / plot_area_height
+
+    polar_name <- if (i == 1) "polar" else paste0("polar", i)
+
+    sub <- pct_df %>% filter(cluster == cl)
+    theta_vals <- c(sub$lcz_short, sub$lcz_short[1])
+    r_vals <- c(sub$pct, sub$pct[1])
+    hover_labels <- c(sub$lcz_full, sub$lcz_full[1])
+
+    fig <- fig %>%
+      add_trace(
+        r = r_vals,
+        theta = theta_vals,
+        subplot = polar_name,
+        name = paste("Cluster", cl),
+        text = hover_labels,
+        hovertemplate = paste0("<b>Cluster ", cl, "</b><br>%{text}: %{r:.1f}%<extra></extra>"),
+        line = list(color = colors[[cl]]),
+        marker = list(color = colors[[cl]]),
+        opacity = 0.7,
+        showlegend = FALSE
+      )
+
+    polar_layouts[[polar_name]] <- list(
+      domain = list(x = c(x0, x1), y = c(y0, y1)),
+      radialaxis = list(visible = TRUE, range = c(0, r_max), ticksuffix = "%", tickfont = list(size = 8)),
+      angularaxis = list(tickfont = list(size = 8))
+    )
+
+    annotations[[i]] <- list(
+      text = paste("Cluster", cl),
+      x = (x0 + x1) / 2, y = title_y,
+      xanchor = "center", yanchor = "top",
+      xref = "paper", yref = "paper",
+      showarrow = FALSE,
+      font = list(size = 13)
+    )
+  }
+
+  layout_args <- c(
+    list(fig),
+    polar_layouts,
+    list(
+      title = title,
+      annotations = annotations,
+      width = fig_width,
+      height = fig_height,
+      margin = list(t = main_title_margin, b = bottom_margin, l = side_margin, r = side_margin)
+    )
+  )
+
+  do.call(layout, layout_args)
+}
+
+# Compute % of total segment length per cluster for one roads dataset
+cluster_length_pct <- function(roads_data, all_clusters = names(cluster_colors)) {
+  roads_data$seg_length <- as.numeric(st_length(roads_data))
+
+  pct_df <- roads_data %>%
+    st_drop_geometry() %>%
+    mutate(cluster = as.character(cluster)) %>%
+    group_by(cluster) %>%
+    summarise(total_length = sum(seg_length, na.rm = TRUE), .groups = "drop") %>%
+    mutate(pct = 100 * total_length / sum(total_length))
+
+  tibble(cluster = all_clusters) %>%
+    left_join(pct_df, by = "cluster") %>%
+    mutate(pct = ifelse(is.na(pct), 0, pct))
+}
+
+# Build a grouped bar chart: cities on shared x-axis, bars colored by cluster
+# data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
+plot_cluster_bar <- function(data_list, colors = cluster_colors) {
+  combined_df <- bind_rows(
+    lapply(names(data_list), function(city_name) {
+      cluster_length_pct(data_list[[city_name]]) %>%
+        mutate(city = city_name)
+    })
+  )
+
+  plot_ly(
+    data = combined_df,
+    x = ~city,
+    y = ~pct,
+    color = ~cluster,
+    colors = colors,
+    type = "bar"
+  ) %>%
+    layout(
+      title = "% of total road segment length by cluster",
+      xaxis = list(title = ""),
+      yaxis = list(title = "% of total length", ticksuffix = "%"),
+      barmode = "group",
+      legend = list(title = list(text = "Cluster"))
+    )
+}
+```
+
+# Results
+
+## Neighbourhood-Scale
+
+### Rotterdam 
+
+```{=html}
+{{< include components/rotterdam-maps.html >}}
+```
+
+### Guangzhou
+
+```{=html}
+{{< include components/guangzhou-maps.html >}}
+```
+
+### Neighbourhood Comparison
+
+Both cities follow somewhat similar distribution of neighbourhoods. More central areas have higher LST and lower NDVI values, and represent high- and mid-rise LCZs, whereas the neighbourhoods on the periphery are cooler, greener, and less dense. Based on this, we selected the area for street analysis, which excludes less central neighbourhoods.  
+
+## Street-Scale Results
+
+### Cluster Overview
+
+```{r message=FALSE, warning=FALSE}
+plot_cluster_3d(roads_sample, title = "Street clusters in Rotterdam")
+```
+
+```{r message=FALSE, warning=FALSE}
+plot_cluster_3d(gzhou_roads_sample, title = "Street clusters in Guangzhou")
+```
+
+First, we interpret the clusters by plotting them against the values used for clustering: NDVI, LST, and betweenness. 
+
+- **Cluster 0** has the highest LST, lowest NDVI and high betweenness, therefore, we select this cluster for further analysis. In Rotterdam, this cluster corresponds to areas in or around city centre (corresponding to LCZs of open high-, mid-, and low-rise) and some industrial areas (large low-rise). In Guangzhou, it is found in dense areas but also quite often in industrial ones it is dominated by large low-rise LCZ. 
+- **Cluster 1** has comparable, sometimes even higher betweenness values but is somewhat lower in LST and higher in NDVI, and is usually adjacent to cluster 0, and corresponds to similar LCZs, too. 
+- **Cluster 4** has similar LST and NDVI as cluster 1 but is lower in betweenness. Streets in this cluster are typically found in low-rise neighbourhoods, and sometimes are interrupted by pockets of cluster 0 or 1. In Rotterdam, it is dominated by the open low-rise LCZ, whereas in Guangzhou, the distribution is comparable to that of cluster 1. 
+- **Cluster 3** has highest NDVI and lowest LST, but still relatively high betweenness values. On the map, this cluster often corresponds to parks. The corresponding LCZs are dense and scattered trees, as well as some open low-rise. 
+- **Cluster 5** is comparable to clusters 0, 1, and 4 in LST and NDVI but has much lower betweenness values. In Rotterdam, cluster 5 is often found on the outskirts or in (historic) port areas. In Guangzhou, however, it is often part of a highway interchange, suggesting that the clustering (or preceding calculations) are not directly transferable between the cities. Interestingly, the corresponding LCZs are extremely similar, exhibiting near identical patterns of open and large low-rise and open high-rise. 
+- Finally, **Cluster 2** is similar to cluster 3 in NDVI and LST but has lower betweenness, and similarly corresponds to parks. It also has dense and scattered trees, low plants, and some open low-rise. 
+
+```{r message=FALSE, warning=FALSE}
+plot_cluster_lcz_radar_facets(roads_data, title = "Rotterdam: LCZ composition by cluster")
+```
+
+```{r message=FALSE, warning=FALSE}
+plot_cluster_lcz_radar_facets(gzhou_roads_data, title = "Guangzhou: LCZ composition by cluster")
+```
+
+It should be noted that the cities have somewhat different LCZ composition: Rotterdam has more open low-rise and scattered trees, whereas Guangzhou has more large low-rise and dense trees. 
+
+```{r message=FALSE, warning=FALSE}
+plot_city_lcz_radar(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
+```
+
+We also note the general differences in the prevalence of the clusters: in Guangzhou, nearly a third of the street segments is part of cluster 1 compared to only 21% for Rotterdam, but the sum of cluster 0 + cluster 1 is nearly identical at 46% vs Rotterdam's 44%. Guangzhou also has a higher prevalence of clusters 2 and 5, seemingly due to lower betweenness values along certain stretches of highway and roads in the urban forest northeast of the city centre. 
+
+```{r message=FALSE, warning=FALSE}
+bar_chart <- plot_cluster_bar(
+  list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
+)
+bar_chart
+```
+
+The difference between the clustering is probably best explained by the general differences between the data distribution between the 2 cities. Guangzhou has marginally lower values of betweenness, particularly the mean and Q1. More interestingly, perhaps, is that it also has both lower NDVI and lower LST. We beileve this may be due to how we carried out normalisation, only calculating the mean within the raster rather than comparing the values with the known rural areas. Lower NDVI values, we beileve, are correct, as we specifically calculate NDVI along roads, as Guangzhou appears to have much fewer roads passing through parks or fewer roads with extensive plant cover along them. 
+
+```{r message=FALSE, warning=FALSE}
+plot_lst_ndvi_violin(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
+```
+
+While the 3D plot already shows that LST and NDVI are inversely correlated, we also calculate the correlation coefficient for both Rotterdam and Guangzhou. The correlation is somewhat stronger for Rotterdam, and the points are clustered more closely around the trend line. 
+
+```{r message=FALSE, warning=FALSE}
+plot_lst_ndvi_scatter(roads_sample, "Rotterdam")
+```
+
+```{r message=FALSE, warning=FALSE}
+plot_lst_ndvi_scatter(gzhou_roads_sample, "Guangzhou")
+```
+
+### Rotterdam 
+
+```{=html}
+{{< include components/rotterdam-street-clusters.html >}}
+```
+
+### Guangzhou 
+
+```{=html}
+{{< include components/guangzhou-street-clusters.html >}}
+```
+
+### Map Interpretation
+
+The maps above show the patters, or lack thereof between different clusters in Rotterdam and Guangzhou. Particularly noteworthy is the cluster 5, low betweennes - roundabout in Guangzhou. A lot of the streets in central Guangzhou fall into cluster 1, corresponding to medium-high LST. This may be due to the tall buildings in the area, which provide a lot of shade on the streets, whereas Rotterdam has shorter buildings and thus higher LST. 
+
+## Nature-Based Solutions
+
+The _Nature-based Solutions: Technical Handbook Factsheets_ [@eisenberg_nature_based_2025] provides an overview of nature-based solutions and rates them across 8 categories: cooling; water balance regulation; water purification; air purification; biodiversity; amenity value; food, energy, and material; CO2 sequestration. For the purposes of this analysis, we limit our selection to solutions which are (a) applicable on an urban or suburban street and (b) contribute to cooling through transpiration, evaporation, or shading. 
+
+We would also note that the NBS with highest contribution to cooling is a boulevard; however in Rotterdam, boulevards are already implemented wherever possible, and streets that need intervention are often smaller, which drives our selection of solutions with smaller footprints. 
+
+### NBS: Rotterdam
+
+Based on the analysis, we select **Bloemhof, Afrikaanderwijk, and Hillesluis** to carry out further qualitative evaluation as they have a high concentration of cluster 0 streets. Some of the more central, high-betweenness streets already have relatively higher NDVI and lower temperatures, and we verified that there is street-level vegetation along those. 
+
+```{=html}
+{{< include components/rotterdam-cluster-maps.html >}}
+```
+
+We therefore look at SVI for some of the smaller but still hot streets, and select 3 distinct typologies to which we apply the different nature-based solutions. 
+
+```{=html}
+{{< include components/street-view-rotterdam.html >}}
+```
+
+## NBS: Guangzhou
+
+```{=html}
+{{< include components/yuexiu-district-china.html >}}
+```
+
+While the selected neighbourhood in Guagnzhou is much larger in area, it has extremely limited SVI coverage, chiefly concentrated along highways and other large roads. Therefore our sampling is likely not representative of conditions in Guangzhou, and the fitness of the NBS is at best based on educated guesswork. 
+
+```{=html}
+{{< include components/yuexiu-street-view.html >}}
+```
+
+# Discussion
+
+## Interpretation of the findings
+
+The results demonstrate that urban heat island patterns can be identified effectively through a combination of remotely sensed environmental indicators and street-level spatial analysis. At the neighbourhood scale, the analysis of LST, NDVI, and LCZ successfully identified broad spatial patterns of urban heat. Industrial districts and densely built urban areas generally exhibited higher surface temperatures and lower vegetation cover, while greener neighbourhoods consistently showed lower thermal intensity. The same pattern emerges at street level too, where more exposed streets are hotter than greener ones. These findings are consistent with established urban climate research, which identifies vegetation as an important contributor to surface cooling through shading and evapo-transpiration.
+
+However, we note that neighbourhood-level averages alone are insufficient for identifying appropriate intervention locations. While they effectively highlight broad hotspot areas, they conceal considerable thermal variability within individual neighbourhoods. By transferring the analysis to the street scale, it became possible to identify individual street segments experiencing elevated thermal exposure, providing a much more actionable basis for climate adaptation planning.
+
+The integration of environmental indicators with street-level accessibility and urban morphology further demonstrated that high temperatures alone do not necessarily determine intervention priorities. Streets with similar thermal conditions often differed substantially in their surrounding built environment, vegetation availability, and spatial accessibility. Consequently, different hotspot environments require different nature-based solutions. Dense residential streets with limited available space were found to be more suitable for vertical greening solutions such as green façades and living walls, whereas wider streets offered opportunities for street tree planting. This highlights the importance of considering local urban context alongside thermal conditions when designing climate adaptation strategies.
+
+Finally, the comparison between Rotterdam and Guangzhou suggests that, despite their contrasting climates and urban forms, the proposed analytical workflow is transferable between cities. Although the specific interventions should always reflect local urban conditions, the combination of satellite-derived environmental indicators and street-level analysis provides a flexible framework for identifying thermally vulnerable areas and supporting evidence-based nature-based solution planning.
+
+## Multi-scale spatial analysis
+
+One of the most significant findings of this study is the importance of spatial scale when analysing urban heat islands and identifying suitable intervention locations. At the neighbourhood scale, the analysis successfully identified broad thermal patterns and highlighted districts characterised by elevated LST and limited vegetation cover. This level of aggregation provides a valuable overview of the spatial distribution of heat across the city and is well suited for identifying priority areas for further investigation.
+
+However, neighbourhood averages conceal substantial variability within individual urban blocks. When the analysis was transferred to the street scale, considerably more detailed spatial patterns emerged. Rather than entire neighbourhoods exhibiting uniformly high temperatures, elevated thermal exposure was concentrated along specific streets and street segments. This demonstrates that neighbourhood-scale analyses alone are insufficient for guiding targeted climate adaptation measures, as interventions are ultimately implemented within the public realm at the scale of individual streets. From a planning perspective, neighbourhood-level analysis is valuable for prioritising investment, whereas street-level analysis provides the spatial precision required to determine where interventions should actually be implemented.
+
+The comparison between Rotterdam and Guangzhou further illustrates how multi-scale analysis reveals differences in urban morphology that would not be apparent from city-wide statistics alone. While the same analytical workflow was successfully transferred to both cities, the resulting hotspot environments differed considerably.
+
+In Rotterdam, the highest temperatures were predominantly observed within dense residential neighbourhoods, particularly along narrow side streets characterised by limited vegetation and enclosed urban form. Large commercial areas and major boulevards generally exhibited lower thermal intensity than expected, likely reflecting the extensive investment in blue-green infrastructure and mature street trees already present throughout the city. This suggests that previous investments in Rotterdam's blue-green infrastructure may already be mitigating heat accumulation along major transport corridors, shifting thermal vulnerability towards smaller residential streets where greening opportunities remain more limited.
+
+By contrast, the Guangzhou case study revealed a different urban structure. Thermal hotspots were frequently associated with large transport corridors, major intersections and expansive road infrastructure surrounding residential developments. These environments are characterised by large impervious surfaces and considerably wider streets than those typically found in Rotterdam. Consequently, although the analytical framework remained transferable, the resulting intervention priorities differed substantially between the two cities. Unlike Rotterdam, where interventions primarily target dense residential streets, Guangzhou offers opportunities for larger-scale linear green infrastructure along major transport corridors. The same methodology therefore produced different adaptation strategies despite relying on identical analytical procedures.
+
+## Nature-based solutions
+
+The proposed nature-based solutions were selected according to the physical characteristics of each hotspot environment rather than thermal conditions alone. This study demonstrates that different urban forms require different approaches to urban cooling.
+
+In Rotterdam, many of the identified hotspot streets were located within dense residential neighbourhoods where available public space is limited. Existing major boulevards and principal transport corridors already incorporate substantial tree cover and green infrastructure, reducing their relative thermal vulnerability. As a result, interventions focused on smaller residential streets where additional cooling potential remains. Green façades and living walls were proposed for locations with limited planting space, allowing vegetation to be introduced without significantly altering the existing street layout. Where sufficient pavement width existed, street trees and linear planting schemes were recommended to increase shading, improve pedestrian thermal comfort and enhance evapo-transpiration.
+
+The Guangzhou case study presented a contrasting urban context. Here, hotspot areas were frequently associated with large arterial roads, highway interchanges and expansive paved surfaces adjacent to residential districts. These environments provide considerably more physical space for intervention but also generate greater heat through extensive impervious cover. Consequently, larger-scale greening strategies may be more appropriate, including continuous roadside tree planting, vegetated buffers and extensive green walls alongside major transport corridors. In addition to reducing surface temperatures through shading and evapotranspiration, such interventions may also improve acoustic conditions by providing a vegetated barrier between traffic infrastructure and surrounding residential areas.
+
+These findings emphasise that effective nature-based solutions cannot be selected solely on the basis of temperature. Instead, they should be matched to local urban morphology, available space and existing green infrastructure. While the specific interventions differed between Rotterdam and Guangzhou, the analytical workflow consistently supported the identification of locations where context-sensitive climate adaptation measures are likely to provide the greatest benefit.
+
+## Limitations
+
+A key limitation of this study is the reliance on LST rather than direct measurements of pedestrian thermal comfort such as mean radiant temperature. Although LST provides valuable information regarding heat accumulation, human thermal perception is additionally influenced by air temperature, humidity, wind speed, solar radiation and shading.
+
+Another limitation is the available data. The raster datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty. Similarly, the vector datasets have issues, too. OpenStreetMap's administrative divisions do not always reflect the official boundaries. Furthermore, the data semantics are inconsistent between areas: while Rotterdam's pedestrian network appears accurate, in Guangzhou, highways are labelled as accessible for walking. 
+
+Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
+
+# Conclusions
+
+This study demonstrates that combining neighbourhood-scale and street-scale spatial analysis provides an effective framework for identifying urban heat hotspots and selecting context-sensitive nature-based solutions.
+
+Neighbourhood-scale analysis successfully identifies broad thermal patterns and priority areas for further investigation. However, transferring the analysis to the street scale reveals considerably greater spatial detail, allowing identification of individual hotspot corridors and representative urban environments. This finer spatial resolution proved essential for selecting interventions that reflect the physical characteristics of each location rather than relying solely on aggregated neighbourhood statistics.
+
+The comparison between Rotterdam and Guangzhou further demonstrated that although urban morphology strongly influences the type of intervention required, the overall analytical workflow remains transferable across cities with different climatic and spatial characteristics. While Rotterdam's hotspot areas were predominantly located within dense residential neighbourhoods, Guangzhou's hotspots were largely associated with large transport corridors and major road infrastructure, leading to different but equally context-specific nature-based solution strategies.
+Overall, the study highlights that broad-scale analysis identifies where urban heat occurs, while street-scale analysis identifies where meaningful interventions can be implemented. By combining open spatial datasets with multi-scale analysis, the proposed workflow provides a practical and transferable framework for supporting evidence-based urban climate adaptation and nature-based planning.
+
+# Disclosures
+
+## Reproducibility
+
+The analytical workflow are designed to be fully reproducible. The project repository includes all code used for analysis, and most of the code used for visualisation — please consult `README.md` for details. 
+
+## Team Contributions
+
+NP: Neighbourhood-scale processing, map visualisation. Contributed to "Introduction", "Methodology", and some of the results in the report. 
+AK: Street-scale processing, data plots. Contributed to all sections of the report, primary author of "Methodology" and "Results" sections. 
+DF: Helper function in clustering. Contributed to "Methodology" section of the report. 
+HG: Carried out literature review, suggested appropriate NBS. Primary author of "Discussion" and "Conclusions" sections of the report. 
+
+## Use of AI
+
+A combination of ChatGPT, Claude and Gemini were used to complete this project. Most code is generated with Claude or Gemini. ChatGPT and Gemini were also used to assist with writing of the report. 
+
+# References

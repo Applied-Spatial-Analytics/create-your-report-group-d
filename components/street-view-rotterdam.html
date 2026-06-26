@@ -1,0 +1,93 @@
+<div class="module-box">
+
+  <p class="module-title">Street-level observations</p>
+
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+
+    <div>
+      <div class="map-container">
+        <img class="map-img" src="Report data/Images/Rotterdam/street-views/neighbourhood.png" alt="Neighbourhood map">
+        <div class="dot" style="top: 75%; left: 77%; background: #2ecc71;" onclick="selectDot(0, this)" title="Vlasakkersstraat"></div>
+        <div class="dot" style="top: 45%; left: 45%; background: #2ecc71;" onclick="selectDot(1, this)" title="Anemoonstraat"></div>
+        <div class="dot" style="top: 30%; left: 20%; background: #2ecc71;" onclick="selectDot(2, this)" title="Jouberstraat"></div>
+      </div>
+      <p class="hint" style="text-align: center;">Click a dot to see street view</p>
+    </div>
+
+    <div id="sv-panel" style="display: none; width: 100%;">
+      <div class="sv-card" id="card-0">
+        <img src="Report data/Images/Rotterdam/street-views/street-1.png" alt="Street view — Vlasakkersstraat">
+        <div class="sv-label">Vlasakkersstraat</div>
+      </div>
+      <div class="sv-card" id="card-1">
+        <img src="Report data/Images/Rotterdam/street-views/street-2.png" alt="Street view — Anemoonstraat">
+        <div class="sv-label">Anemoonstraat</div>
+      </div>
+      <div class="sv-card" id="card-2">
+        <img src="Report data/Images/Rotterdam/street-views/street-3.png" alt="Street view — Jouberstraat">
+        <div class="sv-label">Jouberstraat</div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="info-panel" style="width: 100%;">
+      <img id="info-ref-img" class="info-ref-img" src="" alt="Reference NbS image">
+      <div class="info-text">
+        <h3 id="info-title"></h3>
+        <ul id="info-list"></ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const streetInfo = [
+  {
+    title: "Vlasakkersstraat — Green facades",
+    img: "Report data/Images/Rotterdam/street-views/solutions/green-facade.png",
+    points: [
+      "Suitable where horizontal space is limited",
+      "Increases urban vegetation without requiring street restructuring",
+      "Reduces surface temperature and air pollution"
+    ]
+  },
+  {
+    title: "Anemoonstraat — Free standing living walls",
+    img: "Report data/Images/Rotterdam/street-views/solutions/free-standing-wall.png",
+    points: [
+      "Suitable where some street space is available but full restructuring is not feasible",
+      "Increases urban vegetation without requiring changes to the street layout",
+      "Reduces surface temperature and air pollution"
+    ]
+  },
+  {
+    title: "Jouberstraat — Groups of trees",
+    img: "Report data/Images/Rotterdam/street-views/solutions/group-of-trees.png",
+    points: [
+      "Requires more open space but delivers stronger cooling effects",
+      "Combined shading and evapotranspiration significantly improves pedestrian thermal comfort",
+      "Reduces air temperature, air pollution, and enhances overall street quality"
+    ]
+  }
+];
+
+let activeDot = null;
+
+function selectDot(index, dotEl) {
+  if (activeDot) activeDot.classList.remove('active');
+  activeDot = dotEl;
+  dotEl.classList.add('active');
+
+  document.querySelectorAll('.sv-card').forEach((c, i) => {
+    c.classList.toggle('visible', i === index);
+  });
+
+  document.getElementById('sv-panel').style.display = 'block';
+
+  const info = streetInfo[index];
+  document.getElementById('info-title').textContent = info.title;
+  document.getElementById('info-list').innerHTML = info.points.map(p => `<li>${p}</li>`).join('');
+  document.getElementById('info-ref-img').src = info.img;
+  document.getElementById('info-panel').classList.add('visible');
+}
+</script>

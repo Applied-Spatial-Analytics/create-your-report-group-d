@@ -1,0 +1,107 @@
+<div class="widget-shell">
+
+  <h4 style="text-align:center;">Neighbourhood Analysis</h4>
+
+  <div style="display:flex; justify-content:center; gap:10px; margin:15px 0; flex-wrap:wrap;">
+    <button id="lstBtn"
+      style="padding:10px 18px; border:none; border-radius:8px; background:#A32D2D; color:white; font-weight:600; cursor:pointer;">
+      Heat Island (LST)
+    </button>
+    <button id="ndviBtn"
+      style="padding:10px 18px; border:1px solid #d3d1c7; border-radius:8px; background:white; font-weight:600; cursor:pointer;">
+      Vegetation (NDVI)
+    </button>
+  </div>
+
+  <!-- LST PANEL -->
+  <div id="lstPanel" style="text-align:center;">
+    <h5>Top Heat Island Neighbourhoods</h5>
+    <div style="display:inline-block; text-align:left;">
+      <div class="workflow-step">
+        <div class="step-num" style="background:#A32D2D;">1</div>
+        <div class="step-body"><strong>Bedrijvenpark Noord-West</strong> — +10.60°C</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#B23A3A;">2</div>
+        <div class="step-body"><strong>Spaanse Polder</strong> — +9.18°C</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#C24A4A;">3</div>
+        <div class="step-body"><strong>Zuidplein</strong> — +8.50°C</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#D35D5D;">4</div>
+        <div class="step-body"><strong>Nieuw Mathenesse</strong> — +8.02°C</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#E07474;">5</div>
+        <div class="step-body"><strong>Waalhaven Zuid</strong> — +7.85°C</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NDVI PANEL -->
+  <div id="ndviPanel" style="display:none; text-align:center;">
+    <h5>Top Vegetation Deficit Neighbourhoods</h5>
+    <div style="display:inline-block; text-align:left;">
+      <div class="workflow-step">
+        <div class="step-num" style="background:#3B6D11;">1</div>
+        <div class="step-body"><strong>Kop van Zuid</strong> — −0.230 NDVI</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#4A7F1A;">2</div>
+        <div class="step-body"><strong>Cs Kwartier</strong> — −0.253 NDVI</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#5A9422;">3</div>
+        <div class="step-body"><strong>Zuidplein</strong> — −0.268 NDVI</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#6AA82B;">4</div>
+        <div class="step-body"><strong>Waalhaven Zuid</strong> — −0.274 NDVI</div>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num" style="background:#7BBC35;">5</div>
+        <div class="step-body"><strong>Spaanse Polder</strong> — −0.281 NDVI</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-caption" style="text-align:center; margin-top:12px;">
+    <strong>Key Insight.</strong> Heat hotspots align strongly with industrial zones, while vegetation deficits cluster in highly built-up or infrastructurally dense neighbourhoods.
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const lstBtn   = document.getElementById("lstBtn");
+  const ndviBtn  = document.getElementById("ndviBtn");
+  const lstPanel = document.getElementById("lstPanel");
+  const ndviPanel= document.getElementById("ndviPanel");
+
+  function setActive(btn, color) {
+    btn.style.background = color;
+    btn.style.color = "white";
+    btn.style.border = "none";
+  }
+  function setInactive(btn) {
+    btn.style.background = "white";
+    btn.style.color = "black";
+    btn.style.border = "1px solid #d3d1c7";
+  }
+
+  lstBtn.onclick = () => {
+    lstPanel.style.display = "block";
+    ndviPanel.style.display = "none";
+    setActive(lstBtn, "#A32D2D");
+    setInactive(ndviBtn);
+  };
+  ndviBtn.onclick = () => {
+    lstPanel.style.display = "none";
+    ndviPanel.style.display = "block";
+    setActive(ndviBtn, "#3B6D11");
+    setInactive(lstBtn);
+  };
+})();
+</script>
