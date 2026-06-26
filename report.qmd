@@ -112,9 +112,9 @@ invisible(capture.output(
                         layer = "rotterdam_roads_data")
 ))
 
-# Randomly select 500 rows
+# Randomly select 1000 rows
 set.seed(42)  # remove or change this if you don't want reproducible sampling
-roads_sample <- roads_data %>% slice_sample(n = 500)
+roads_sample <- roads_data %>% slice_sample(n = 1000)
 
 # Colors for clusters 0-5
 cluster_colors <- c(
@@ -205,9 +205,9 @@ invisible(capture.output(
                         layer = "guangzhou_roads_data")
 ))
 
-# Randomly select 500 rows
+# Randomly select 1000 rows
 set.seed(42)  # remove or change this if you don't want reproducible sampling
-gzhou_roads_sample <- gzhou_roads_data %>% slice_sample(n = 500)
+gzhou_roads_sample <- gzhou_roads_data %>% slice_sample(n = 1000)
 
 # Colors for clusters 0-5
 cluster_colors <- c(
@@ -301,12 +301,13 @@ add_box_summary <- function(p, x, center, color, name, box_width = 0.12) {
   )
 }
 
-# Violin plots for LST and NDVI, one subplot per variable, one violin per city within each
+# Violin plots for LST, NDVI, and betweenness (Bww1kM), one subplot per
+# variable, one violin per city within each
 # data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
 plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
-                                  title = "Distribution of LST and NDVI by city") {
+                                  title = "Distribution of LST, NDVI, and Betweenness by city") {
 
-  # Build one violin subplot for a given variable (e.g. "lst" or "ndvi")
+  # Build one violin subplot for a given variable (e.g. "lst", "ndvi", "Bww1kM")
   build_panel <- function(var, y_title, show_legend) {
     p <- plot_ly()
     for (i in seq_along(data_list)) {
@@ -325,10 +326,11 @@ plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
     )
   }
 
-  p_lst  <- build_panel("lst",  "LST",  show_legend = TRUE)
-  p_ndvi <- build_panel("ndvi", "NDVI", show_legend = FALSE)
+  p_lst  <- build_panel("lst",    "LST",         show_legend = TRUE)
+  p_ndvi <- build_panel("ndvi",   "NDVI",        show_legend = FALSE)
+  p_bw   <- build_panel("Bww1kM", "Betweenness", show_legend = FALSE)
 
-  subplot(p_lst, p_ndvi, nrows = 1, titleY = TRUE, margin = 0.06) %>%
+  subplot(p_lst, p_ndvi, p_bw, nrows = 1, titleY = TRUE, margin = 0.06) %>%
     layout(
       title = title,
       legend = list(title = list(text = "City"))
