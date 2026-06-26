@@ -251,45 +251,77 @@ hex_to_rgba <- function(hex, alpha) {
   sprintf("rgba(%d,%d,%d,%.2f)", rgb_vals[1], rgb_vals[2], rgb_vals[3], alpha)
 }
 
+# Draws a violin SHAPE from a precomputed density curve (n points) instead of
+# letting plotly's type="violin" embed every raw row to recompute the KDE
+# client-side. This is what actually kills the file-size blow-up: regardless
+# of whether `x` has 500 or 350,000 values, density() always returns `n`
+# points, so the embedded JSON payload stays tiny and constant-size.
+add_violin_from_density <- function(p, x, center, color, name,
+                                     half_width = 0.35, n = 256,
+                                     line_opacity = 0.8, fill_opacity = 0.4,
+                                     showlegend = TRUE) {
+  x <- x[is.finite(x)]
+  d <- density(x, n = n)                      # ~256 (x,y) pairs, not 1 per row
+
+  scale <- half_width / max(d$y)               # normalize to a fixed max width
+  half  <- d$y * scale
+
+  # closed polygon: left edge going up the value range, right edge coming back down
+  poly_x <- c(center - half, rev(center + half))
+  poly_y <- c(d$x,           rev(d$x))
+
+  p %>% add_trace(
+    type = "scatter", mode = "lines",
+    x = poly_x, y = poly_y,
+    fill = "toself",
+    fillcolor = hex_to_rgba(color, fill_opacity),
+    line = list(color = hex_to_rgba(color, line_opacity)),
+    name = name, legendgroup = name, showlegend = showlegend,
+    hoverinfo = "skip"
+  )
+}
+
+# Box + mean line drawn from a 5-number summary, not the raw vector. plotly's
+# box trace supports precomputed q1/median/q3/lowerfence/upperfence/mean
+# directly, so this needs only ~6 numbers per group.
+add_box_summary <- function(p, x, center, color, name, box_width = 0.12) {
+  x  <- x[is.finite(x)]
+  qs <- quantile(x, probs = c(0, 0.25, 0.5, 0.75, 1), names = FALSE)
+
+  p %>% add_trace(
+    type = "box",
+    x0 = center, width = box_width,
+    q1 = list(qs[2]), median = list(qs[3]), q3 = list(qs[4]),
+    lowerfence = list(qs[1]), upperfence = list(qs[5]),
+    mean = list(mean(x)), boxmean = TRUE,
+    fillcolor = "white",
+    line = list(color = color, width = 1),
+    name = name, legendgroup = name, showlegend = FALSE,
+    hoverinfo = "skip"
+  )
+}
+
 # Violin plots for LST and NDVI, one subplot per variable, one violin per city within each
 # data_list: named list, e.g. list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data)
 plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
-                                  line_opacity = 0.8, fill_opacity = 0.4,
                                   title = "Distribution of LST and NDVI by city") {
-
-  combined <- bind_rows(lapply(names(data_list), function(city_name) {
-    data_list[[city_name]] %>%
-      st_drop_geometry() %>%
-      select(lst, ndvi) %>%
-      mutate(city = city_name)
-  })) %>%
-    mutate(city = factor(city, levels = names(data_list)))  # fixed left-to-right order
 
   # Build one violin subplot for a given variable (e.g. "lst" or "ndvi")
   build_panel <- function(var, y_title, show_legend) {
     p <- plot_ly()
     for (i in seq_along(data_list)) {
       city_name <- names(data_list)[i]
-      sub <- combined %>% filter(city == city_name)
+      x <- data_list[[city_name]] %>% st_drop_geometry() %>% pull(.data[[var]])
 
-      p <- p %>% add_trace(
-        type = "violin",
-        x = sub$city,
-        y = sub[[var]],
-        name = city_name,
-        legendgroup = city_name,
-        scalegroup = var,        # violins within a panel share scaling
-        box = list(visible = TRUE),
-        meanline = list(visible = TRUE),
-        line = list(color = hex_to_rgba(colors[i], line_opacity)),
-        fillcolor = hex_to_rgba(colors[i], fill_opacity),
-        points = FALSE,
-        showlegend = show_legend
-      )
+      p <- p %>%
+        add_violin_from_density(x, center = i, color = colors[i], name = city_name,
+                                 showlegend = show_legend) %>%
+        add_box_summary(x, center = i, color = colors[i], name = city_name)
     }
     p %>% layout(
       yaxis = list(title = y_title),
-      xaxis = list(title = "")
+      xaxis = list(title = "", tickvals = seq_along(data_list),
+                   ticktext = names(data_list), range = c(0.5, length(data_list) + 0.5))
     )
   }
 
@@ -299,7 +331,6 @@ plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
   subplot(p_lst, p_ndvi, nrows = 1, titleY = TRUE, margin = 0.06) %>%
     layout(
       title = title,
-      violinmode = "group",
       legend = list(title = list(text = "City"))
     )
 }
