@@ -295,28 +295,52 @@ plot_lst_ndvi_violin <- function(data_list, colors = c("#4C72B0", "#FC9964"),
     )
 }
 
-# LST vs NDVI scatter with correlation coefficient + linear trend line,
-# colored by cluster
-plot_lst_ndvi_scatter <- function(data, city_name) {
+# LST vs NDVI scatter with correlation coefficient, R-squared, linear trend
+# line, and a shaded prediction band — the width of the band shows how
+# tightly individual streets cluster around the trend (narrow = tight fit,
+# wide = loose/scattered fit), which a bare r value alone doesn't convey
+plot_lst_ndvi_scatter <- function(data, city_name, level = 0.95) {
   correlation <- cor(data$lst, data$ndvi, use = "complete.obs")
+  r_squared   <- correlation^2
 
   lm_fit <- lm(ndvi ~ lst, data = data)
   lst_range <- seq(min(data$lst, na.rm = TRUE),
                     max(data$lst, na.rm = TRUE),
                     length.out = 100)
-  trend_pred <- predict(lm_fit, newdata = data.frame(lst = lst_range))
 
-  plot_ly(
-    data = data,
-    x = ~lst,
-    y = ~ndvi,
-    type = "scatter",
-    mode = "markers",
-    color = ~as.factor(cluster),
-    colors = cluster_colors,
-    marker = list(size = 6, opacity = 0.7),
-    name = ~as.factor(cluster)
-  ) %>%
+  # interval = "prediction" captures the spread of individual observations
+  # around the line (i.e. tightness of the cloud of points), as opposed to
+  # interval = "confidence" which only captures uncertainty in the mean line
+  pred <- predict(lm_fit, newdata = data.frame(lst = lst_range),
+                   interval = "prediction", level = level)
+  trend_pred <- pred[, "fit"]
+  pred_lwr   <- pred[, "lwr"]
+  pred_upr   <- pred[, "upr"]
+
+  plot_ly() %>%
+    add_trace(
+      x = c(lst_range, rev(lst_range)),
+      y = c(pred_upr, rev(pred_lwr)),
+      type = "scatter",
+      mode = "lines",
+      fill = "toself",
+      fillcolor = hex_to_rgba("#000000", 0.08),
+      line = list(color = "transparent"),
+      name = paste0(round(level * 100), "% prediction band"),
+      hoverinfo = "skip"
+    ) %>%
+    add_trace(
+      data = data,
+      x = ~lst,
+      y = ~ndvi,
+      type = "scatter",
+      mode = "markers",
+      color = ~as.factor(cluster),
+      colors = cluster_colors,
+      marker = list(size = 6, opacity = 0.7),
+      name = ~as.factor(cluster),
+      inherit = FALSE
+    ) %>%
     add_trace(
       x = lst_range,
       y = trend_pred,
@@ -327,7 +351,8 @@ plot_lst_ndvi_scatter <- function(data, city_name) {
       inherit = FALSE   # <-- prevents it from inheriting the marker settings above
     ) %>%
     layout(
-      title = paste0(city_name, ": LST vs NDVI (r = ", round(correlation, 3), ")"),
+      title = paste0(city_name, ": LST vs NDVI (r = ", round(correlation, 3),
+                      ", R\u00b2 = ", round(r_squared, 3), ")"),
       xaxis = list(title = "LST"),
       yaxis = list(title = "NDVI")
     )
@@ -634,59 +659,62 @@ The difference between the clustering is probably best explained by the general 
 plot_lst_ndvi_violin(list(Rotterdam = roads_data, Guangzhou = gzhou_roads_data))
 ```
 
-### Rotterdam 
+While the 3D plot already shows that LST and NDVI are inversely correlated, we also calculate the correlation coefficient for both Rotterdam and Guangzhou. The correlation is somewhat stronger for Rotterdam, and the points are clustered more closely around the trend line. 
 
-### Guangzhou 
-
-### Street Comparison
-
-Both the maps and the graphs show distinct differences between Rotterdam and Guangzhou. Rotterdam has 
-
-## Small-scale output: Rotterdam
-
-From the analysis, three neighbourhoods stand out as showing extreme variation relative to the rest of the city: **Bloemhof, Afrikaanderwijk, and Hillesluis**.
-
-
-```{=html}
-{{< include components/rotterdam-cluster-maps.html >}}
+```{r message=FALSE, warning=FALSE}
+plot_lst_ndvi_scatter(roads_sample, "Rotterdam")
 ```
-
-
-
-
-
-
-## Small-scale output: Guangzhou
-
-
-```{=html}
-{{< include components/yuexiu-district-china.html >}}
-```
-
-
-# Results
-
-## Rotterdam: Street View and Nature based solutions
-
-```{=html}
-{{< include components/street-view-rotterdam.html >}}
-```
-
-## Gunagzhou: Street View and Nature based solutions
-
-```{=html}
-{{< include components/yuexiu-street-view.html >}}
-```
-
-
-
 
 ```{r message=FALSE, warning=FALSE}
 plot_lst_ndvi_scatter(gzhou_roads_sample, "Guangzhou")
 ```
 
-```{r message=FALSE, warning=FALSE}
-plot_lst_ndvi_scatter(roads_sample, "Rotterdam")
+### Rotterdam 
+
+```{=html}
+{{< include components/rotterdam-street-clusters.html >}}
+```
+
+### Guangzhou 
+
+```{=html}
+{{< include components/guangzhou-street-clusters.html >}}
+```
+
+### Map Interpretation
+
+The maps above show the patters — or lack thereof — between different clusters in Rotterdam and Guangzhou. Particularly noteworthy is the cluster 5 — low betweennes — roundabout in Guangzhou. A lot of the streets in central Guangzhou fall into cluster 1, corresponding to medium-high LST. This may be due to the tall buildings in the area, which provide a lot of shade on the streets, whereas Rotterdam has shorter buildings and thus higher LST. 
+
+## Nature-Based Solutions
+
+The _Nature-based Solutions: Technical Handbook Factsheets_ [@eisenberg_nature_based_2025] provides an overview of nature-based solutions and rates them across 8 categories: cooling; water balance regulation; water purification; air purification; biodiversity; amenity value; food, energy, and material; CO2 sequestration. For the purposes of this analysis, we limit our selection to solutions which are (a) applicable on an urban or suburban street and (b) contribute to cooling through transpiration, evaporation, or shading. 
+
+We would also note that the NBS with highest contribution to cooling is a boulevard; however in Rotterdam, boulevards are already implemented wherever possible, and streets that need intervention are often smaller, which drives our selection of solutions with smaller footprints. 
+
+### NBS: Rotterdam
+
+Based on the analysis, we select **Bloemhof, Afrikaanderwijk, and Hillesluis** to carry out further qualitative evaluation as they have a high concentration of cluster 0 streets. Some of the more central, high-betweenness streets already have relatively higher NDVI and lower temperatures, and we verified that there is street-level vegetation along those. 
+
+```{=html}
+{{< include components/rotterdam-cluster-maps.html >}}
+```
+
+We therefore look at SVI for some of the smaller but still hot streets, and select 3 distinct typologies to which we apply the different nature-based solutions. 
+
+```{=html}
+{{< include components/street-view-rotterdam.html >}}
+```
+
+## NBS: Guangzhou
+
+```{=html}
+{{< include components/yuexiu-district-china.html >}}
+```
+
+While the selected neighbourhood in Guagnzhou is much larger in area, it has extremely limited SVI coverage, chiefly concentrated along highways and other large roads. Therefore our sampling is likely not representative of conditions in Guangzhou, and the fitness of the NBS is at best based on educated guesswork. 
+
+```{=html}
+{{< include components/yuexiu-street-view.html >}}
 ```
 
 # Discussion
