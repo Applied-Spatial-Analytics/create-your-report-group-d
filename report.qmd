@@ -687,8 +687,8 @@ plot_cluster_lcz_radar_facets(roads_data, title = "Rotterdam: LCZ composition by
 plot_cluster_lcz_radar_facets(gzhou_roads_data, title = "Guangzhou: LCZ composition by cluster")
 ```
 
-#Discussion
-##Interpretation of the findings
+# Discussion
+## Interpretation of the findings
 
 The results demonstrate that urban heat island patterns can be identified effectively through a combination of remotely sensed environmental indicators and street-level spatial analysis. At the neighbourhood scale, the analysis of Land Surface Temperature (LST), Normalized Difference Vegetation Index (NDVI), and Local Climate Zones (LCZ) successfully identified broad spatial patterns of urban heat. Industrial districts and densely built urban areas generally exhibited higher surface temperatures and lower vegetation cover, while greener neighbourhoods consistently showed lower thermal intensity. These findings are consistent with established urban climate research, which identifies vegetation as an important contributor to surface cooling through shading and evapotranspiration.
 
@@ -698,7 +698,7 @@ The integration of environmental indicators with street-level accessibility and 
 
 Finally, the comparison between Rotterdam and Guangzhou suggests that, despite their contrasting climates and urban forms, the proposed analytical workflow is transferable between cities. Although the specific interventions should always reflect local urban conditions, the combination of satellite-derived environmental indicators and street-level analysis provides a flexible framework for identifying thermally vulnerable areas and supporting evidence-based nature-based solution planning.
 
-##Multi-scale spatial analysis
+## Multi-scale spatial analysis
 
 One of the most significant findings of this study is the importance of spatial scale when analysing urban heat islands and identifying suitable intervention locations. At the neighbourhood scale, the analysis successfully identified broad thermal patterns and highlighted districts characterised by elevated land surface temperatures and limited vegetation cover. This level of aggregation provides a valuable overview of the spatial distribution of heat across the city and is well suited for identifying priority areas for further investigation.
 
@@ -710,7 +710,7 @@ In Rotterdam, the highest temperatures were predominantly observed within dense 
 
 By contrast, the Guangzhou case study revealed a different urban structure. Thermal hotspots were frequently associated with large transport corridors, major intersections and expansive road infrastructure surrounding residential developments. These environments are characterised by large impervious surfaces and considerably wider streets than those typically found in Rotterdam. Consequently, although the analytical framework remained transferable, the resulting intervention priorities differed substantially between the two cities. Unlike Rotterdam, where interventions primarily target dense residential streets, Guangzhou offers opportunities for larger-scale linear green infrastructure along major transport corridors. The same methodology therefore produced different adaptation strategies despite relying on identical analytical procedures.
 
-##Nature-based solutions
+## Nature-based solutions
 
 The proposed nature-based solutions were selected according to the physical characteristics of each hotspot environment rather than thermal conditions alone. This study demonstrates that different urban forms require different approaches to urban cooling.
 
@@ -720,12 +720,12 @@ The Guangzhou case study presented a contrasting urban context. Here, hotspot ar
 
 These findings emphasise that effective nature-based solutions cannot be selected solely on the basis of temperature. Instead, they should be matched to local urban morphology, available space and existing green infrastructure. While the specific interventions differed between Rotterdam and Guangzhou, the analytical workflow consistently supported the identification of locations where context-sensitive climate adaptation measures are likely to provide the greatest benefit.
 
-##Limitations
+## Limitations
 
 A key limitation of this study is the reliance on Land Surface Temperature rather than direct measurements of pedestrian thermal comfort. Although LST provides valuable information regarding heat accumulation, human thermal perception is additionally influenced by air temperature, humidity, wind speed, solar radiation and shading.
 Furthermore, the datasets used in this study were acquired at different spatial resolutions. Landsat imagery was available at a resolution of 30 m, whereas Local Climate Zones were represented at 100 m resolution. Although these datasets could be integrated successfully, aggregating them to street level inevitably introduces spatial uncertainty. Finally, the analysis represents thermal conditions during a limited observation period and therefore does not capture seasonal or diurnal variability. Future work could incorporate additional climatic variables, perform seasonal analyses and evaluate the cooling performance of proposed nature-based solutions through microclimate simulations.
 
-#Conclusion
+# Conclusion
 
 This study demonstrates that combining neighbourhood-scale and street-scale spatial analysis provides an effective framework for identifying urban heat hotspots and selecting context-sensitive nature-based solutions.
 Neighbourhood-scale analysis successfully identified broad thermal patterns and priority areas for further investigation. However, transferring the analysis to the street scale revealed considerably greater spatial detail, allowing individual hotspot corridors and representative urban environments to be identified. This finer spatial resolution proved essential for selecting interventions that reflect the physical characteristics of each location rather than relying solely on aggregated neighbourhood statistics.
