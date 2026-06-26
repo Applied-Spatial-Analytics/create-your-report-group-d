@@ -23,11 +23,12 @@ format:
 
 # Introduction
 
-In the context of rapid urbanisation and climate change, it is increasingly important to understand how cities shape their local climate.
+In the context of [rapid urbanisation](https://desapublications.un.org/publications/world-urbanization-prospects-2025-summary-results) and [climate change](https://wmo.int/publication-series/state-of-global-climate/state-of-global-climate-2025), it is increasingly important to understand how cities shape their local climate.
 
-Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability. Cities differ in density, land use, building materials, and the amount of green space they contain. These factors strongly affect how heat is absorbed, stored, and released, which leads to noticeable temperature differences between urban areas. A key concept here is the **Urban Heat Island (UHI)** effect, where cities become warmer than their surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution.
+In cities, the effects of the climate change are even more severe due to the [**Urban heat island (UHI) effect**](https://science.nasa.gov/kids/earth/what-is-an-urban-heat-island/) — a phenomenon which makes the cities are hotter than surrounding rural areas. This happens because materials like concrete and asphalt absorb and hold heat, vegetation is limited and cannot provide enough cooling through shade, and human activities such as transport, buildings, and industry release additional heat. Together, these factors increase local temperatures and can lead to higher heat stress, energy use, and air pollution. 
 
-Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban blue-green infrastructure contributes to temperature mitigation.
+However, cities are not made equal — they differ in density, land use, building materials, and the amount of green space. Comparing cities helps us see how differences in urban form influence temperature, environmental quality, and overall liveability.Understanding UHI highlights the direct relationship between urban design and local climate. In this context, we aim to investigate how spatial data resolution influences UHI estimation and how urban green infrastructure contributes to temperature mitigation. 
+
 In light of this we aim to explore the following research question:
 
 ```{=html}
@@ -36,43 +37,45 @@ In light of this we aim to explore the following research question:
 
 ::: {.note-box}
 **City Selection:** 
-To answer the research question, we focus on two case study cities: Rotterdam and Guangzhou. These cities were selected for their similarities in coastal location and economic significance, while also exhibiting distinct urban forms and climates. `Rotterdam`, located in the Netherlands, is known for its modern architecture and extensive port facilities, while `Guangzhou`, in southern China, features a mix of traditional and contemporary urban development. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
+To answer the research question, we focus on two case study cities: Rotterdam, the Netherlands and Guangzhou, China. Both are major port cities — port of Rotterdam is [the largest port in Europe](https://www.portofrotterdam.com/en), Guangzhou port is [the largest port in the region and 5th largest in the world](https://en.gzport.com/pub/ywwzmb1/aboutGZP/GuangzhouPort/202004/t20200429_3107.html) — and both are located in river deltas. However, Guagnzhou boasts a population 26 times larger than Rotterdam. By comparing these two cities, we can gain insights into how different urban designs and green infrastructure strategies impact UHI intensity across varying spatial resolutions.
 :::
+
 ---
 
-## Methods
+# Methodology
 
-Our methodology relies on a dual - scale approach to understand the urban climate. We analyzed both macro - level administrative boundaries (Dutch *buurten* and Chinese *jiedao*) and micro - level street networks. By sticking entirely to open-source data—primarily OpenStreetMap (OSM) and Landsat satellite imagery, we ensured that the pipeline built for Rotterdam could be directly transferred to Guangzhou without coordinate or data availability issues.
+Our methodology relies on a dual-scale approach to understand the urban climate. We start at macro-level (looking at administrative boundaries — Dutch *buurten* and Chinese *jiedao*) and then zoom into the micro-level street networks. We primarily rely on open global datasetss (OpenStreetMap (OSM), Landsat satellite imagery, and Local Climate Zones) to ensure transferrability between Rotterdam, Guangzhou, and other cities too. 
 
-# Getting started
-
-The first step of the analysis involves identifying the required datasets and defining the spatial boundaries of the study area.
-
-For this purpose, **Google Earth Engine (GEE)** was used to access and process the main datasets. These datasets form the basis for the initial setup and help in selecting the relevant neighbourhoods for further analysis.
-
-
-**1. Land Surface Temperature (LST):**
- LST was derived from Landsat 8 data in Google Earth Engine. Thermal bands were processed to obtain surface temperature, which was then used to study spatial heat variations across Rotterdam.
-
-**2. NDVI:**
- Vegetation cover was computed from Landsat 8 spectral bands in Google Earth Engine using the Normalized Difference Vegetation Index (NDVI), providing a measure of urban greenness.
-
-**3. Local Climate Zones (LCZ):**
- Urban form classification was obtained using the RUBCLIM LCZ dataset available in Google Earth Engine, which categorises urban areas based on built type and land cover characteristics.
-
-**4. Administrative boundaries:**
- Municipal and neighbourhood boundaries for Rotterdam were taken from the `CBS Wijken en Buurten 2025 GeoPackage`, used to define the spatial extent of the study area.
-
-**5. Street network:**
- The pedestrian street network was extracted from OpenStreetMap using the `osmnx` library, and used for analysing urban connectivity and spatial structure.
-
-
-# Analysis Workflow
+## Workflow Overview
 ```{=html}
 {{< include components/pipeline-widget.html >}}
 ```
 
-## Typology construction
+## Data Acquisition
+
+The first step of the analysis involves identifying the required datasets and defining the spatial boundaries of the study area.
+
+For raster data, **Google Earth Engine (GEE)** was used to access and process the main datasets. For vector data, we relied on Overpass API and `osmnx` python library. 
+
+**1. Land Surface Temperature (LST):**
+LST is derived from Landsat 8 data in Google Earth Engine. Thermal bands are processed to obtain surface temperature, which was then used to study spatial heat variations across Rotterdam. 
+``` {.callout-note }
+An issue with using Landsat-derived LST is the cloud coverage and stiching several dates, which result in large jumps in temperature and anomalous cold/hot patches. To mitigate this, we normalise the dataset, subtracting the mean LST for each date from each raster cell prior to stiching. 
+```
+
+**2. NDVI:**
+Vegetation cover was computed from Landsat 8 data in Google Earth Engine using the Normalized Difference Vegetation Index (NDVI), providing a measure of the extent of urban green infrastructure. 
+
+**3. Local Climate Zones (LCZ):**
+Urban form classification was obtained using the RUBCLIM LCZ dataset available in Google Earth Engine, which categorises urban areas based on built type and land cover characteristics.
+
+**4. Administrative boundaries:**
+Municipal and neighbourhood boundaries for Rotterdam were taken from the `CBS Wijken en Buurten 2025`, used to define the spatial extent of the study area. For Guangzhou, the municipal boundaries were extracted from OpenStreetMap. 
+
+**5. Street network:**
+The pedestrian street network was extracted from OpenStreetMap using the `osmnx` library.
+
+## Data Processing
 
 Instead of designing climate adaptations for thousands of individual streets or dozens of neighborhoods one by one, we grouped the urban fabric into distinct "typologies." These are essentially microclimate personas: clusters of areas that share the same environmental and spatial DNA. If we know what works for a specific typology in Rotterdam, we can test if that same solution works for its twin typology in Guangzhou.
 
