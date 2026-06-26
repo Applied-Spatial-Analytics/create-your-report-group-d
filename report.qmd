@@ -21,7 +21,7 @@ format:
 ---
 
 
-# Introduction
+# Introduction 
 
 In the context of rapid urbanisation and climate change, it is increasingly important to understand how cities shape their local climate.
 
